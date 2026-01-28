@@ -3,7 +3,6 @@ import time
 import sys
 import json
 import csv
-import os
 import uuid
 import requests
 from pathlib import Path
@@ -14,18 +13,14 @@ from datetime import date, timedelta
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
-# Логика дат бронирования
-today_date = date.today()
-start_date = today_date + timedelta(days=1)
-end_date = today_date + timedelta(days=2)
-
-class OstrovokRoomsParser:
+class OstrovokRoomsDailyParser:
     def __init__(self):
         self.session = requests.Session()
         self.api_url = "https://ostrovok.ru/hotel/search/v1/site/hp/search"
         self.cookies = None
+        self.current_dir = Path(__file__).parent
     
-    def get_cookies_from_browser(self):
+    def _get_cookies_from_browser(self):
         """Получение куки через реальный браузер"""
         print("Запуск браузера для получения куки...")
         
@@ -53,15 +48,14 @@ class OstrovokRoomsParser:
         try:
             path = urlparse(hotel_url).path.rstrip("/")
             return path.split("/")[-1] if path else None
-        except Exception as exc:
-            print(f"Не удалось распарсить url {hotel_url}: {exc}")
+        except Exception:
             return None
     
-    def search_hotel(self, hotel_id, checkin_date, checkout_date, adults=1):
+    def _search_hotel(self, hotel_id, arrival_date, departure_date, adults=1):
         """Поиск с куки из браузера"""
         
         if not self.cookies:
-            self.get_cookies_from_browser()
+            self._get_cookies_from_browser()
         
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -72,8 +66,8 @@ class OstrovokRoomsParser:
         }
         
         payload = {
-            "arrival_date": checkin_date,
-            "departure_date": checkout_date,
+            "arrival_date": arrival_date.strftime("%Y-%m-%d"),
+            "departure_date": departure_date.strftime("%Y-%m-%d"),
             "hotel": hotel_id,
             "currency": "RUB",
             "lang": "ru",
@@ -97,44 +91,37 @@ class OstrovokRoomsParser:
                 print(f"Ошибка: {response.status_code}")
                 return None
                 
-        except Exception as e:
-            print(f"Ошибка: {e}")
+        except Exception:
             return None
 
-    def extract_room_data(self, json_data):
-        """Извлекает данные по каждому номеру из JSON ответа API"""
-        rooms_data = []
+    def _extract_room_data(self, json_data):
+        """Извлекает данные по каждому номеру из JSON ответа API и группирует по rg_hash"""
+        rooms_by_rg_hash = {}
         
         hotel_id = json_data.get("ota_hotel_id", "")
-        master_id = json_data.get("master_id", "")
+        master_id = str(json_data.get("master_id", ""))
         rates = json_data.get("rates", [])
+        base_hotel_url = "https://ostrovok.ru/hotel/russia/western_siberia_irkutsk_oblast_multi/"
+        hotel_url = f"{base_hotel_url}mid{master_id}/{hotel_id}"
         
         if not rates:
+            # Если по отелю не пришли rates, всё равно пишем строку по отелю (для контроля пропусков)
             return [{
-                "hotel_id": hotel_id,
+                "ota_hotel_id": hotel_id,
                 "master_id": master_id,
-                "rate_hash": "",
-                "rg_hash": "",
-                "multi_bed_data": "",
                 "room_name": "",
-                "room_type": "",
+                "rg_hash": "",
+                "count_rg_hash": "0",
                 "allotment": "",
                 "bedding_type": "",
-                "main_bed_count": "",
-                "extra_bed_count": "",
-                "has_breakfast": "",
-                "meal_type": "",
-                "amenities": "",
-                "price_rub": "",
-                "payment_types": "",
-                "free_cancellation_before": "",
-                "cancellation_penalty_percent": "",
-                "no_show_penalty": ""
+                "bedding_data": "",
+                "multi_bed_data": "",
+                "price_rub_min": "",
+                "price_rub_max": "",
+                "url": hotel_url,
             }]
         
         for rate in rates:
-            rate_hash = rate.get("hash", "")
-            
             payment_options = rate.get("payment_options", {})
             payment_types_list = payment_options.get("payment_types", [])
             price_rub = ""
@@ -142,207 +129,240 @@ class OstrovokRoomsParser:
                 first_payment = payment_types_list[0]
                 price_rub = first_payment.get("amount") or first_payment.get("show_amount", "")
             
-            allowed_payment_types = payment_options.get("allowed_payment_types", [])
-            payment_types_str = ", ".join([
-                f"{pt.get('type', '')}/{pt.get('by', '')}" 
-                for pt in allowed_payment_types
-            ])
-            
-            cancellation_info = rate.get("cancellation_info", {})
-            free_cancellation_before = cancellation_info.get("free_cancellation_before", "")
-            if free_cancellation_before:
-                free_cancellation_before = free_cancellation_before.split("T")[0]
-            
-            cancellation_policies = cancellation_info.get("policies", [])
-            cancellation_penalty_percent = ""
-            if cancellation_policies:
-                for policy in cancellation_policies:
-                    penalty = policy.get("penalty", {})
-                    if penalty.get("percent"):
-                        cancellation_penalty_percent = penalty.get("percent", "")
-                        break
-            
-            no_show = rate.get("no_show", {})
-            no_show_penalty = ""
-            if no_show:
-                no_show_penalty_obj = no_show.get("penalty", {})
-                no_show_penalty = no_show_penalty_obj.get("amount", "")
+            # Преобразуем цену в число для сравнения
+            try:
+                price_value = float(price_rub) if price_rub else float('inf')
+            except (ValueError, TypeError):
+                price_value = float('inf')
             
             rooms = rate.get("rooms", [])
             
             if not rooms:
-                rooms_data.append({
-                    "hotel_id": hotel_id,
-                    "master_id": master_id,
-                    "rate_hash": rate_hash,
-                    "rg_hash": "",
-                    "multi_bed_data": "",
-                    "room_name": rate.get("room_name", ""),
-                    "room_type": rate.get("room_data_trans", {}).get("ru", {}).get("main_room_type", ""),
-                    "allotment": rate.get("allotment", ""),
-                    "bedding_type": rate.get("room_data_trans", {}).get("ru", {}).get("bedding_type", ""),
-                    "main_bed_count": rate.get("bed_places", {}).get("main_count", ""),
-                    "extra_bed_count": rate.get("bed_places", {}).get("extra_count", ""),
-                    "has_breakfast": rate.get("meal_data", {}).get("meals", [{}])[0].get("has_breakfast", False),
-                    "meal_type": rate.get("meal", [""])[0] if rate.get("meal") else "",
-                    "amenities": ", ".join(rate.get("serp_filters", [])),
-                    "price_rub": price_rub,
-                    "payment_types": payment_types_str,
-                    "free_cancellation_before": free_cancellation_before,
-                    "cancellation_penalty_percent": cancellation_penalty_percent,
-                    "no_show_penalty": no_show_penalty
-                })
+                # Если нет rooms, используем данные из rate
+                rg_hash = ""
+                room_name = rate.get("room_name", "")
+                room_data_trans = rate.get("room_data_trans", {}).get("ru", {})
+                bedding_type = room_data_trans.get("bedding_type", "")
+                allotment = rate.get("allotment", 0)
+                bedding_data = rate.get("bedding_data", [])
+                multi_bed_data = rate.get("multi_bed_data", [])
+                
+                # Пропускаем записи без rg_hash
+                if not rg_hash:
+                    continue
+                
+                # Преобразуем allotment в число
+                try:
+                    allotment_value = int(allotment) if allotment else 0
+                except (ValueError, TypeError):
+                    allotment_value = 0
+                
+                # Преобразуем bedding_data и multi_bed_data в строки
+                bedding_data_str = json.dumps(bedding_data, ensure_ascii=False) if bedding_data else ""
+                multi_bed_data_str = json.dumps(multi_bed_data, ensure_ascii=False) if multi_bed_data else ""
+                
+                # Группируем по rg_hash
+                if rg_hash in rooms_by_rg_hash:
+                    # Объединяем: обновляем min/max цены и счетчик
+                    existing = rooms_by_rg_hash[rg_hash]
+                    existing["count_rg_hash"] += 1
+                    if price_value < existing.get("_price_min", float('inf')):
+                        existing["price_rub_min"] = price_rub
+                        existing["_price_min"] = price_value
+                    if price_value > existing.get("_price_max", float('-inf')):
+                        existing["price_rub_max"] = price_rub
+                        existing["_price_max"] = price_value
+                else:
+                    # Первая запись для этого rg_hash
+                    rooms_by_rg_hash[rg_hash] = {
+                        "ota_hotel_id": hotel_id,
+                        "master_id": master_id,
+                        "room_name": room_name,
+                        "rg_hash": rg_hash,
+                        "count_rg_hash": 1,
+                        "allotment": str(allotment_value),
+                        "bedding_type": bedding_type,
+                        "bedding_data": bedding_data_str,
+                        "multi_bed_data": multi_bed_data_str,
+                        "price_rub_min": price_rub,
+                        "price_rub_max": price_rub,
+                        "url": hotel_url,
+                        "_price_min": price_value,
+                        "_price_max": price_value
+                    }
             else:
                 for room in rooms:
+                    rg_hash = room.get("rg_hash", "")
                     room_name = room.get("room_name", "")
                     room_data_trans = room.get("room_data_trans", {}).get("ru", {})
-                    room_type = room_data_trans.get("main_room_type", "")
                     bedding_type = room_data_trans.get("bedding_type", "")
-                    
-                    bed_places = room.get("bed_places", {})
-                    main_bed_count = bed_places.get("main_count", "")
-                    extra_bed_count = bed_places.get("extra_count", "")
-                    
-                    meal_data = room.get("meal_data", {})
-                    meals = meal_data.get("meals", [])
-                    has_breakfast = False
-                    meal_type = ""
-                    if meals:
-                        has_breakfast = meals[0].get("has_breakfast", False)
-                        meal_type = meals[0].get("value", "")
-                    
-                    if not meal_type:
-                        meal_list = room.get("meal", [])
-                        if meal_list:
-                            meal_type = meal_list[0]
-                    
-                    serp_filters = room.get("serp_filters", [])
-                    amenities = ", ".join(serp_filters) if serp_filters else ""
-                    
-                    allotment = room.get("allotment", "")
-                    rg_hash = room.get("rg_hash", "")
+                    allotment = room.get("allotment", 0)
+                    bedding_data = room.get("bedding_data", [])
                     multi_bed_data = room.get("multi_bed_data", [])
+                    
+                    # Пропускаем записи без rg_hash
+                    if not rg_hash:
+                        continue
+                    
+                    # Преобразуем allotment в число
+                    try:
+                        allotment_value = int(allotment) if allotment else 0
+                    except (ValueError, TypeError):
+                        allotment_value = 0
+                    
+                    # Преобразуем bedding_data и multi_bed_data в строки
+                    bedding_data_str = json.dumps(bedding_data, ensure_ascii=False) if bedding_data else ""
                     multi_bed_data_str = json.dumps(multi_bed_data, ensure_ascii=False) if multi_bed_data else ""
                     
-                    rooms_data.append({
-                        "hotel_id": hotel_id,
-                        "master_id": master_id,
-                        "rate_hash": rate_hash,
-                        "rg_hash": rg_hash,
-                        "multi_bed_data": multi_bed_data_str,
-                        "room_name": room_name,
-                        "room_type": room_type,
-                        "allotment": allotment,
-                        "bedding_type": bedding_type,
-                        "main_bed_count": main_bed_count,
-                        "extra_bed_count": extra_bed_count,
-                        "has_breakfast": "Да" if has_breakfast else "Нет",
-                        "meal_type": meal_type,
-                        "amenities": amenities,
-                        "price_rub": price_rub,
-                        "payment_types": payment_types_str,
-                        "free_cancellation_before": free_cancellation_before,
-                        "cancellation_penalty_percent": cancellation_penalty_percent,
-                        "no_show_penalty": no_show_penalty
-                    })
+                    # Группируем по rg_hash
+                    if rg_hash in rooms_by_rg_hash:
+                        # Объединяем: обновляем min/max цены и счетчик
+                        existing = rooms_by_rg_hash[rg_hash]
+                        existing["count_rg_hash"] += 1
+                        if price_value < existing.get("_price_min", float('inf')):
+                            existing["price_rub_min"] = price_rub
+                            existing["_price_min"] = price_value
+                        if price_value > existing.get("_price_max", float('-inf')):
+                            existing["price_rub_max"] = price_rub
+                            existing["_price_max"] = price_value
+                    else:
+                        # Первая запись для этого rg_hash
+                        rooms_by_rg_hash[rg_hash] = {
+                            "ota_hotel_id": hotel_id,
+                            "master_id": master_id,
+                            "room_name": room_name,
+                            "rg_hash": rg_hash,
+                            "count_rg_hash": 1,
+                            "allotment": str(allotment_value),
+                            "bedding_type": bedding_type,
+                            "bedding_data": bedding_data_str,
+                            "multi_bed_data": multi_bed_data_str,
+                            "price_rub_min": price_rub,
+                            "price_rub_max": price_rub,
+                            "url": hotel_url,
+                            "_price_min": price_value,
+                            "_price_max": price_value
+                        }
+        
+        # Удаляем служебные поля и преобразуем count_rg_hash в строку
+        rooms_data = []
+        for room in rooms_by_rg_hash.values():
+            room.pop("_price_min", None)
+            room.pop("_price_max", None)
+            room["count_rg_hash"] = str(room["count_rg_hash"])
+            rooms_data.append(room)
         
         return rooms_data
 
-    def read_hotels_from_csv(self, csv_path):
+    def _read_hotels_from_csv(self, csv_path):
         """Читает список отелей из CSV файла"""
         hotels = []
         
-        with open(csv_path, newline="", encoding="utf-8-sig") as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=",")
-            for row in reader:
-                hotels.append(row)
+        try:
+            with open(csv_path, newline="", encoding="utf-8-sig") as csvfile:
+                reader = csv.DictReader(csvfile, delimiter=",")
+                for row in reader:
+                    hotels.append(row)
+        except Exception:
+            pass
         
         return hotels
 
-    def process_hotel(self, hotel_row, checkin_date, checkout_date):
-        """Обрабатывает один отель: извлекает ID, запрашивает данные и сохраняет в CSV"""
+    def _process_hotel(self, hotel_row, arrival_date, departure_date):
+        """Обрабатывает один отель: извлекает ID, запрашивает данные"""
         hotel_url = hotel_row.get("show_rooms_url") or hotel_row.get("url") or hotel_row.get("detail_url")
         hotel_name = hotel_row.get("ota_hotel_id") or hotel_row.get("name") or "unknown"
         hotel_id = self._extract_hotel_id(hotel_url) if hotel_url else None
 
         if not hotel_id:
             print(f"Пропускаю {hotel_name}: не найден hotel_id")
-            return False
+            return []
 
         print(f"Запрашиваю {hotel_name} ({hotel_id})")
-        result = self.search_hotel(hotel_id, checkin_date, checkout_date)
+        result = self._search_hotel(hotel_id, arrival_date, departure_date)
 
         if not result:
             print(f"Нет данных для {hotel_name}")
-            return False
+            return []
 
-        rooms_data = self.extract_room_data(result)
+        rooms_data = self._extract_room_data(result)
         return rooms_data
 
-    def get_all_rooms(self, csv_path, checkin_date, checkout_date, output_csv):
+    def get_all_rooms(self, csv_path=None):
         """Основная функция для парсинга номеров отелей из списка"""
+        today = date.today()
+        arrival_date = today + timedelta(days=1)
+        departure_date = today + timedelta(days=2)
         
-        # --- Получаем куки ---
-        self.get_cookies_from_browser()
+        print(f"Даты бронирования: {arrival_date.strftime('%d.%m.%Y')} - {departure_date.strftime('%d.%m.%Y')}")
+        
+        if csv_path is None:
+            csv_path = self.current_dir / 'output' / 'ostrovok_hotels.csv'
+        else:
+            csv_path = Path(csv_path)
+        
+        # Получаем куки
+        self._get_cookies_from_browser()
 
-        # --- Инициализируем CSV файл ---
-        fieldnames = [
-            "hotel_id",
-            "master_id",
-            "rate_hash",
-            "rg_hash",
-            "multi_bed_data",
-            "room_name",
-            "room_type",
-            "allotment",
-            "bedding_type",
-            "main_bed_count",
-            "extra_bed_count",
-            "has_breakfast",
-            "meal_type",
-            "amenities",
-            "price_rub",
-            "payment_types",
-            "free_cancellation_before",
-            "cancellation_penalty_percent",
-            "no_show_penalty"
-        ]
+        # Читаем список отелей
+        hotels = self._read_hotels_from_csv(csv_path)
         
-        file_exists = os.path.exists(output_csv)
-        if not file_exists:
-            with open(output_csv, "w", newline="", encoding="utf-8-sig") as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                writer.writeheader()
-
-        # --- Читаем список отелей ---
-        hotels = self.read_hotels_from_csv(csv_path)
+        if not hotels:
+            print("\nНе удалось загрузить список отелей.")
+            return []
         
-        # --- Обрабатываем каждый отель ---
+        # Обрабатываем каждый отель
         all_rooms_data = []
         for hotel_row in hotels:
-            rooms_data = self.process_hotel(hotel_row, checkin_date, checkout_date)
+            rooms_data = self._process_hotel(hotel_row, arrival_date, departure_date)
             if rooms_data:
                 all_rooms_data.extend(rooms_data)
-                print(f"Сохранено {len(rooms_data)} номеров для {hotel_row.get('hotel_name') or hotel_row.get('name', 'unknown')}")
-
-        # --- Сохраняем все данные в CSV ---
-        with open(output_csv, "a", newline="", encoding="utf-8-sig") as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writerows(all_rooms_data)
+                # Для вывода считаем только реальные номера (строки-заглушки имеют пустой rg_hash)
+                rooms_count = sum(1 for r in rooms_data if r.get("rg_hash"))
+                print(f"Сохранено {rooms_count} номеров для {hotel_row.get('hotel_name') or hotel_row.get('name', 'unknown')}")
         
-        print(f"\n=== Всего сохранено {len(all_rooms_data)} номеров в {output_csv} ===")
+        if all_rooms_data:
+            self._save_to_csv(all_rooms_data)
+            print(f"\nПарсинг завершён. Всего обработано {len(all_rooms_data)} номеров.")
+        else:
+            print("\nНе удалось извлечь данные о номерах.")
+        
         return all_rooms_data
+    
+    def _save_to_csv(self, rooms_data):
+        """Сохраняет данные номеров в CSV файл"""
+        if not rooms_data:
+            return
+        
+        output_dir = self.current_dir / 'output'
+        output_dir.mkdir(exist_ok=True)
+        csv_filename = output_dir / 'ostrovok_rooms.csv'
+        
+        fieldnames = [
+            "ota_hotel_id",
+            "master_id",
+            "room_name",
+            "rg_hash",
+            "count_rg_hash",
+            "allotment",
+            "bedding_type",
+            "bedding_data",
+            "multi_bed_data",
+            "price_rub_min",
+            "price_rub_max",
+            "url"
+        ]
+        
+        try:
+            with open(csv_filename, 'w', encoding='utf-8-sig', newline='') as csv_file:
+                writer = csv.DictWriter(csv_file, fieldnames=fieldnames, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                writer.writeheader()
+                for room in rooms_data:
+                    writer.writerow(room)
+            print(f"Сохранено {len(rooms_data)} номеров в {csv_filename}")
+        except Exception as e:
+            print(f"Ошибка при сохранении CSV: {e}")
 
 if __name__ == "__main__":
-    parser = OstrovokRoomsParser()
-    
-    # Используем даты из логики выше
-    checkin_date = start_date.strftime("%Y-%m-%d")
-    checkout_date = end_date.strftime("%Y-%m-%d")
-    
-    print(f"Даты бронирования: {checkin_date} - {checkout_date}")
-    
-    csv_path = r"C:\Users\matve\Desktop\ostrovok_parser\output\ostrovok_hotels.csv"
-    output_csv = r"C:\Users\matve\Desktop\ostrovok_parser\output\ostrovok_rooms.csv"
-    
-    parser.get_all_rooms(csv_path, checkin_date, checkout_date, output_csv)
+    parser = OstrovokRoomsDailyParser()
+    parser.get_all_rooms()

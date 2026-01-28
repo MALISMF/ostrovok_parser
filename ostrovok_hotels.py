@@ -11,7 +11,7 @@ from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
-class OstrovokHotelsParser:
+class OstrovokHotelsDailyParser:
     def __init__(self):
         self.base_url = "https://ostrovok.ru/hotel/russia/western_siberia_irkutsk_oblast_multi/"
         self.api_endpoint = "/hotel/search/v2/site/serp"
@@ -204,5 +204,5 @@ class OstrovokHotelsParser:
             print(f"Ошибка при сохранении CSV: {e}")
     
 if __name__ == "__main__":
-    parser = OstrovokHotelsParser()
+    parser = OstrovokHotelsDailyParser()
     parser.get_all_hotels_list()
