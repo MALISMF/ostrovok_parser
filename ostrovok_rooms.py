@@ -8,6 +8,7 @@ import requests
 from pathlib import Path
 from urllib.parse import urlparse
 from datetime import date, timedelta
+from capacity_utils import compute_max_capacity
 
 # Настройка stdout для корректного вывода Юникода
 if sys.stdout.encoding != 'utf-8':
@@ -114,8 +115,10 @@ class OstrovokRoomsDailyParser:
                 "count_rg_hash": "0",
                 "allotment": "",
                 "bedding_type": "",
+                "beds": "",
                 "bedding_data": "",
                 "multi_bed_data": "",
+                "max_capacity": "",
                 "price_rub_min": "",
                 "price_rub_max": "",
                 "url": hotel_url,
@@ -143,9 +146,14 @@ class OstrovokRoomsDailyParser:
                 room_name = rate.get("room_name", "")
                 room_data_trans = rate.get("room_data_trans", {}).get("ru", {})
                 bedding_type = room_data_trans.get("bedding_type", "")
+                beds_list = room_data_trans.get("beds") or []
+                beds_str = json.dumps(beds_list, ensure_ascii=False) if beds_list else ""
                 allotment = rate.get("allotment", 0)
                 bedding_data = rate.get("bedding_data", [])
                 multi_bed_data = rate.get("multi_bed_data", [])
+
+                # Вместимость одного номера
+                capacity_per_room = compute_max_capacity(room_name, beds_list)
                 
                 # Пропускаем записи без rg_hash
                 if not rg_hash:
@@ -182,8 +190,10 @@ class OstrovokRoomsDailyParser:
                         "count_rg_hash": 1,
                         "allotment": str(allotment_value),
                         "bedding_type": bedding_type,
+                        "beds": beds_str,
                         "bedding_data": bedding_data_str,
                         "multi_bed_data": multi_bed_data_str,
+                        "max_capacity": str(capacity_per_room),
                         "price_rub_min": price_rub,
                         "price_rub_max": price_rub,
                         "url": hotel_url,
@@ -196,9 +206,14 @@ class OstrovokRoomsDailyParser:
                     room_name = room.get("room_name", "")
                     room_data_trans = room.get("room_data_trans", {}).get("ru", {})
                     bedding_type = room_data_trans.get("bedding_type", "")
+                    beds_list = room_data_trans.get("beds") or []
+                    beds_str = json.dumps(beds_list, ensure_ascii=False) if beds_list else ""
                     allotment = room.get("allotment", 0)
                     bedding_data = room.get("bedding_data", [])
                     multi_bed_data = room.get("multi_bed_data", [])
+
+                    # Вместимость одного номера
+                    capacity_per_room = compute_max_capacity(room_name, beds_list)
                     
                     # Пропускаем записи без rg_hash
                     if not rg_hash:
@@ -235,8 +250,10 @@ class OstrovokRoomsDailyParser:
                             "count_rg_hash": 1,
                             "allotment": str(allotment_value),
                             "bedding_type": bedding_type,
+                            "beds": beds_str,
                             "bedding_data": bedding_data_str,
                             "multi_bed_data": multi_bed_data_str,
+                            "max_capacity": str(capacity_per_room),
                             "price_rub_min": price_rub,
                             "price_rub_max": price_rub,
                             "url": hotel_url,
@@ -346,8 +363,10 @@ class OstrovokRoomsDailyParser:
             "count_rg_hash",
             "allotment",
             "bedding_type",
+            "beds",
             "bedding_data",
             "multi_bed_data",
+            "max_capacity",
             "price_rub_min",
             "price_rub_max",
             "url"
