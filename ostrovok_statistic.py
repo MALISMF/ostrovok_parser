@@ -35,7 +35,8 @@ def generate_statistics():
     # Собираем статистику по номерам
     rooms_stats = defaultdict(lambda: {
         'free_rooms_amount': 0,
-        'min_price': None
+        'min_price': None,
+        'max_capacity': 0,  # суммарная вместимость всех свободных номеров
     })
     
     try:
@@ -51,6 +52,15 @@ def generate_statistics():
                 try:
                     allotment_value = int(allotment) if allotment else 0
                     rooms_stats[ota_hotel_id]['free_rooms_amount'] += allotment_value
+                except (ValueError, TypeError):
+                    pass
+
+                # Суммарная вместимость свободных номеров (allotment * capacity одного номера)
+                max_cap_str = row.get('capacity', '')
+                try:
+                    capacity_per_room = int(max_cap_str) if max_cap_str else 0
+                    if capacity_per_room > 0 and allotment_value > 0:
+                        rooms_stats[ota_hotel_id]['max_capacity'] += allotment_value * capacity_per_room
                 except (ValueError, TypeError):
                     pass
                 
@@ -85,6 +95,7 @@ def generate_statistics():
         stats = rooms_stats.get(ota_hotel_id, {})
         free_rooms_amount = stats.get('free_rooms_amount', 0)
         min_price = stats.get('min_price')
+        max_capacity = stats.get('max_capacity', 0)
         
         # Вычисляем процент доступных номеров
         if rooms_num > 0:
@@ -100,6 +111,7 @@ def generate_statistics():
             'name': hotel_info.get('name', ''),
             'rooms_num': str(rooms_num),
             'free_rooms_amount': str(free_rooms_amount),
+            'max_capacity': str(max_capacity),
             'available_rooms_percent': str(available_rooms_percent),
             'date': collection_date,
             'min_price': min_price_str
@@ -111,6 +123,7 @@ def generate_statistics():
         'name',
         'rooms_num',
         'free_rooms_amount',
+        'max_capacity',
         'available_rooms_percent',
         'date',
         'min_price'
