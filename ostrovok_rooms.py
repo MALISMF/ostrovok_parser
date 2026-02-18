@@ -53,7 +53,7 @@ class OstrovokRoomsDailyParser:
             return None
     
     def _search_hotel(self, hotel_id, arrival_date, departure_date, adults=1):
-        """Поиск с куки из браузера"""
+        """Запрос данных по отелю через API Ostrovok"""
         
         if not self.cookies:
             self._get_cookies_from_browser()
@@ -96,7 +96,7 @@ class OstrovokRoomsDailyParser:
             return None
 
     def _extract_room_data(self, json_data):
-        """Извлекает данные по каждому номеру из JSON ответа API и группирует по rg_hash"""
+        """Извлекает данные по каждому номеру из JSON ответа API Ostrovok и группирует по rg_hash"""
         rooms_by_rg_hash = {}
         
         hotel_id = json_data.get("ota_hotel_id", "")

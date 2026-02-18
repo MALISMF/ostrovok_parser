@@ -1,0 +1,54 @@
+name: Ostrovok Parser
+
+on:
+  schedule:
+    # Запуск ежедневно в 08:00 UTC (11:00 МСК)
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    # Ручной запуск из вкладки Actions
+
+jobs:
+  parse-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install playwright requests
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run Ostrovok hotels parser
+        run: python ostrovok_hotels.py
+
+      - name: Run Ostrovok rooms parser
+        run: python ostrovok_rooms.py
+
+      - name: Run Ostrovok statistic
+        run: python ostrovok_statistic.py
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Commit and push output files
+        run: |
+          git add output/ostrovok_hotels.csv output/ostrovok_rooms.csv output/ostrovok_statistic.csv
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update Ostrovok CSV - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+            git push
+          fi

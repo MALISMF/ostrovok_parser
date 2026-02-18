@@ -20,6 +20,7 @@ class OstrovokHotelsDailyParser:
         self.current_dir = Path(__file__).parent
     
     def get_all_hotels_list(self):
+        """Основная функция для парсинга списка отелей на следующие 2 дня"""
         today = date.today()
         arrival_date = today + timedelta(days=1)
         departure_date = today + timedelta(days=2)
@@ -48,8 +49,8 @@ class OstrovokHotelsDailyParser:
         
         return self.all_hotels
             
-
     def _build_search_url(self, arrival_date, departure_date):
+        """Построение URL поиска для CSV столбца show_rooms_url"""
         dates_str = f"{arrival_date.strftime('%d.%m.%Y')}-{departure_date.strftime('%d.%m.%Y')}"
         url = (
             f"{self.base_url}"
@@ -62,6 +63,7 @@ class OstrovokHotelsDailyParser:
         return url
     
     def _setup_response_interceptor(self, page):
+        """Перехват ответов от API Ostrovok"""
         def handle_response(response):
             if (response.request.method == "POST" and 
                 self.api_endpoint in response.url and
@@ -85,8 +87,9 @@ class OstrovokHotelsDailyParser:
         page.on("response", handle_response)
     
     def _parse_all_pages_with_pagination(self, page, base_search_url):
+        """Парсинг всех страниц с пагинацией"""
         current_page = 1
-        max_pages = 3
+        max_pages = 100
         
         while current_page <= max_pages:
             hotels_before = len(self.all_hotels)
@@ -128,6 +131,7 @@ class OstrovokHotelsDailyParser:
         print(f"\n=== Всего собрано отелей со всех страниц: {len(self.all_hotels)} ===")
     
     def _add_page_to_url(self, url, page_number):
+        """Добавление номера страницы к URL"""
         parsed = urlparse(url)
         qs = parse_qs(parsed.query)
         qs["page"] = [str(page_number)]
@@ -135,6 +139,7 @@ class OstrovokHotelsDailyParser:
         return urlunparse(parsed._replace(query=new_query))
     
     def _extract_hotels_from_json(self, json_data):
+        """Извлечение отелей из JSON ответа от API Ostrovok"""
         hotels_list = []
         
         if not json_data or "hotels" not in json_data:
@@ -184,6 +189,7 @@ class OstrovokHotelsDailyParser:
         return hotels_list
     
     def _save_to_csv(self):
+        """Сохранение списка отелей в CSV файл"""
         if not self.all_hotels:
             return
         
