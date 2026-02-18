@@ -102,31 +102,37 @@ class OstrovokHotelsDailyParser:
             print(f"\n--- Страница {current_page} ---")
             
             try:
-                page.goto(page_url, wait_until="domcontentloaded", timeout=30000)
+                page.goto(page_url, wait_until="load", timeout=45000)
             except Exception:
                 pass
             
-            max_wait_time = 15
+            # В CI ответ API может прийти с задержкой — ждём дольше и даём время на запросы
+            max_wait_time = 25
             start_time = time.time()
-            
             while len(self.all_hotels) == hotels_before and (time.time() - start_time) < max_wait_time:
-                time.sleep(0.3)
+                time.sleep(0.5)
                 if len(self.all_hotels) > hotels_before:
                     break
             
             hotels_added = len(self.all_hotels) - hotels_before
+            
+            # Если страница пустая — даём ещё время на ответ API (в CI часто приходит с задержкой)
+            if hotels_added == 0:
+                time.sleep(2)
+                start_time = time.time()
+                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < 15:
+                    time.sleep(0.5)
+                hotels_added = len(self.all_hotels) - hotels_before
+            
             if hotels_added > 0:
                 print(f"Добавлено {hotels_added} отелей со страницы {current_page}. Переход на следующую страницу...")
-            
-            next_page = current_page + 1
-            next_link = page.locator(f'a:has-text("{next_page}")').first
-            
-            if next_link.count() == 0:
-                print(f"Ссылка на страницу {next_page} не найдена. Достигнута последняя страница.")
+            else:
+                print(f"На странице {current_page} отелей не получено. Конец списка.")
                 break
             
+            # Пагинация по URL, не по ссылкам в DOM (в headless ссылки могут не успеть отрендериться)
             current_page += 1
-            time.sleep(0.5)
+            time.sleep(1)
         
         print(f"\n=== Всего собрано отелей со всех страниц: {len(self.all_hotels)} ===")
     
