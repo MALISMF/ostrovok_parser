@@ -43,12 +43,12 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-      - name: Commit and push output files
+      - name: Commit and push daily tables
         run: |
-          git add output/ostrovok_hotels.csv output/ostrovok_rooms.csv output/ostrovok_statistic.csv
+          git add tables/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Update Ostrovok CSV - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+            git commit -m "Ostrovok daily data - $(date +'%Y-%m-%d %H:%M:%S UTC')"
             git push
           fi

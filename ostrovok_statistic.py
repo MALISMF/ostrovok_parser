@@ -8,13 +8,18 @@ from collections import defaultdict
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
-def generate_statistics():
-    """Генерирует статистику по отелям на основе данных из CSV файлов"""
+def generate_statistics(run_date=None):
+    """Генерирует статистику по отелям на основе данных из CSV файлов.
+    run_date — дата сбора (по умолчанию сегодня). Файлы: tables/hotels/{date}.csv, tables/rooms/{date}.csv → tables/statistics/{date}.csv"""
     
     current_dir = Path(__file__).parent
-    hotels_csv = current_dir / 'output' / 'ostrovok_hotels.csv'
-    rooms_csv = current_dir / 'output' / 'ostrovok_rooms.csv'
-    output_csv = current_dir / 'output' / 'ostrovok_statistic.csv'
+    if run_date is None:
+        run_date = date.today()
+    date_str = run_date.isoformat()
+    hotels_csv = current_dir / 'tables' / 'hotels' / f'{date_str}.csv'
+    rooms_csv = current_dir / 'tables' / 'rooms' / f'{date_str}.csv'
+    output_csv = current_dir / 'tables' / 'statistics' / f'{date_str}.csv'
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
     
     # Читаем данные об отелях
     hotels_data = {}
