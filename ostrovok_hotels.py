@@ -29,10 +29,14 @@ class OstrovokHotelsDailyParser:
         print(f"Даты бронирования: {arrival_date.strftime('%d.%m.%Y')} - {departure_date.strftime('%d.%m.%Y')}")
         
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--disable-blink-features=AutomationControlled"]
+            )
             context = browser.new_context(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                locale='ru-RU'
+                locale='ru-RU',
+                viewport={"width": 1920, "height": 1080}
             )
             page = context.new_page()
             
@@ -101,26 +105,53 @@ class OstrovokHotelsDailyParser:
             
             print(f"\n--- Страница {current_page} ---")
             
+            def _load_page_and_wait_for_api():
+                """Переход на страницу с явным ожиданием ответа API (надёжнее в CI)."""
+                pred = lambda r: (
+                    r.request.method == "POST"
+                    and self.api_endpoint in r.url
+                    and "session=" in r.url
+                    and r.status == 200
+                )
+                try:
+                    with page.expect_response(pred, timeout=50000) as resp_info:
+                        page.goto(page_url, wait_until="load", timeout=50000)
+                    resp_info.value
+                except Exception:
+                    page.goto(page_url, wait_until="load", timeout=50000)
+                time.sleep(1)
+            
             try:
-                page.goto(page_url, wait_until="load", timeout=45000)
+                _load_page_and_wait_for_api()
             except Exception:
                 pass
             
-            # В CI ответ API может прийти с задержкой — ждём дольше и даём время на запросы
-            max_wait_time = 25
+            # Дожидаемся появления отелей (обработчик ответа мог сработать чуть позже)
+            max_wait_time = 20
             start_time = time.time()
             while len(self.all_hotels) == hotels_before and (time.time() - start_time) < max_wait_time:
-                time.sleep(0.5)
+                time.sleep(0.4)
                 if len(self.all_hotels) > hotels_before:
                     break
             
             hotels_added = len(self.all_hotels) - hotels_before
             
-            # Если страница пустая — даём ещё время на ответ API (в CI часто приходит с задержкой)
+            # Повторная попытка той же страницы при 0 отелей (в CI часто срабатывает со 2-го раза)
             if hotels_added == 0:
                 time.sleep(2)
                 start_time = time.time()
-                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < 15:
+                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < 12:
+                    time.sleep(0.4)
+                hotels_added = len(self.all_hotels) - hotels_before
+            
+            if hotels_added == 0 and current_page <= 2:
+                print(f"Повторная загрузка страницы {current_page}...")
+                try:
+                    _load_page_and_wait_for_api()
+                except Exception:
+                    pass
+                start_time = time.time()
+                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < 25:
                     time.sleep(0.5)
                 hotels_added = len(self.all_hotels) - hotels_before
             
@@ -130,9 +161,8 @@ class OstrovokHotelsDailyParser:
                 print(f"На странице {current_page} отелей не получено. Конец списка.")
                 break
             
-            # Пагинация по URL, не по ссылкам в DOM (в headless ссылки могут не успеть отрендериться)
             current_page += 1
-            time.sleep(1)
+            time.sleep(1.5)
         
         print(f"\n=== Всего собрано отелей со всех страниц: {len(self.all_hotels)} ===")
     
