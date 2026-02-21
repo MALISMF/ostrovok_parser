@@ -31,12 +31,18 @@ jobs:
 
       - name: Run Ostrovok hotels parser
         run: python ostrovok_hotels.py
+        env:
+          RUN_TZ: Asia/Irkutsk
 
       - name: Run Ostrovok rooms parser
         run: python ostrovok_rooms.py
+        env:
+          RUN_TZ: Asia/Irkutsk
 
       - name: Run Ostrovok statistic
         run: python ostrovok_statistic.py
+        env:
+          RUN_TZ: Asia/Irkutsk
 
       - name: Configure Git
         run: |

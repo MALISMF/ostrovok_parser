@@ -3,7 +3,6 @@ import time
 import sys
 import os
 import csv
-import json
 from pathlib import Path
 from datetime import date, timedelta, datetime
 from zoneinfo import ZoneInfo
@@ -22,8 +21,8 @@ class OstrovokHotelsDailyParser:
         self.current_dir = Path(__file__).parent
     
     def _run_date(self):
-        """Дата запуска: RUN_TZ (например Europe/Moscow) или UTC для консистентности в CI."""
-        tz_name = os.environ.get("RUN_TZ", "UTC")
+        """Дата запуска по RUN_TZ (по умолчанию Asia/Irkutsk)."""
+        tz_name = os.environ.get("RUN_TZ", "Asia/Irkutsk")
         try:
             return datetime.now(ZoneInfo(tz_name)).date()
         except Exception:
@@ -97,7 +96,10 @@ class OstrovokHotelsDailyParser:
                                     self.all_hotels.extend(extracted_hotels)
                                     print(f"Перехвачено и извлечено {len(extracted_hotels)} отелей. Всего: {len(self.all_hotels)}")
                 except Exception as e:
-                    print(f"[API] Ошибка разбора ответа: {e}")
+                    msg = str(e)
+                    # Не логировать известную гонку: тело ответа уже недоступно (навигация/освобождение ресурса)
+                    if "No resource with given identifier" not in msg and "getResponseBody" not in msg:
+                        print(f"[API] Ошибка разбора ответа: {e}")
         
         page.on("response", handle_response)
     

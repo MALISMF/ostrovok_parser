@@ -1,13 +1,15 @@
 from playwright.sync_api import sync_playwright
 import time
 import sys
+import os
 import json
 import csv
 import uuid
 import requests
 from pathlib import Path
 from urllib.parse import urlparse
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
+from zoneinfo import ZoneInfo
 from capacity_utils import compute_max_capacity
 
 # Настройка stdout для корректного вывода Юникода
@@ -20,6 +22,14 @@ class OstrovokRoomsDailyParser:
         self.api_url = "https://ostrovok.ru/hotel/search/v1/site/hp/search"
         self.cookies = None
         self.current_dir = Path(__file__).parent
+    
+    def _run_date(self):
+        """Дата запуска по RUN_TZ (по умолчанию Asia/Irkutsk)."""
+        tz_name = os.environ.get("RUN_TZ", "Asia/Irkutsk")
+        try:
+            return datetime.now(ZoneInfo(tz_name)).date()
+        except Exception:
+            return date.today()
     
     def _get_cookies_from_browser(self):
         """Получение куки через реальный браузер"""
@@ -307,7 +317,7 @@ class OstrovokRoomsDailyParser:
 
     def get_all_rooms(self, csv_path=None):
         """Основная функция для парсинга номеров отелей из списка"""
-        today = date.today()
+        today = self._run_date()
         arrival_date = today + timedelta(days=1)
         departure_date = today + timedelta(days=2)
         
@@ -351,7 +361,7 @@ class OstrovokRoomsDailyParser:
         if not rooms_data:
             return
         
-        run_date = date.today()
+        run_date = self._run_date()
         output_dir = self.current_dir / 'tables' / 'rooms'
         output_dir.mkdir(parents=True, exist_ok=True)
         csv_filename = output_dir / f'{run_date.isoformat()}.csv'

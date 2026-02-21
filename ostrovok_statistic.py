@@ -1,20 +1,31 @@
 import csv
 import sys
+import os
 from pathlib import Path
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from collections import defaultdict
 
 # Настройка stdout для корректного вывода Юникода
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
+def _run_date():
+    """Дата запуска по RUN_TZ (по умолчанию Asia/Irkutsk)."""
+    tz_name = os.environ.get("RUN_TZ", "Asia/Irkutsk")
+    try:
+        return datetime.now(ZoneInfo(tz_name)).date()
+    except Exception:
+        return date.today()
+
+
 def generate_statistics(run_date=None):
     """Генерирует статистику по отелям на основе данных из CSV файлов.
-    run_date — дата сбора (по умолчанию сегодня). Файлы: tables/hotels/{date}.csv, tables/rooms/{date}.csv → tables/statistics/{date}.csv"""
+    run_date — дата сбора (по умолчанию сегодня по RUN_TZ). Файлы: tables/hotels/{date}.csv, tables/rooms/{date}.csv → tables/statistics/{date}.csv"""
     
     current_dir = Path(__file__).parent
     if run_date is None:
-        run_date = date.today()
+        run_date = _run_date()
     date_str = run_date.isoformat()
     hotels_csv = current_dir / 'tables' / 'hotels' / f'{date_str}.csv'
     rooms_csv = current_dir / 'tables' / 'rooms' / f'{date_str}.csv'
@@ -83,9 +94,8 @@ def generate_statistics(run_date=None):
         print(f"Ошибка при чтении {rooms_csv}: {e}")
         return
     
-    # Формируем итоговые данные
-    today = date.today()
-    collection_date = today.strftime('%Y-%m-%d')
+    # Формируем итоговые данные (дата в колонке date = дата сбора, как в путях к файлам)
+    collection_date = run_date.strftime('%Y-%m-%d')
     
     statistics = []
     
