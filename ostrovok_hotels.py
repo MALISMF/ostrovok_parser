@@ -117,23 +117,11 @@ class OstrovokHotelsDailyParser:
             print(f"\n--- Страница {current_page} ---")
             
             def _load_page_and_wait_for_api():
-                """Переход на страницу с явным ожиданием ответа API (надёжнее в CI)."""
-                pred = lambda r: (
-                    r.request.method == "POST"
-                    and self.api_endpoint in r.url
-                    and "session=" in r.url
-                    and r.status == 200
-                )
+                """Переход на страницу. Без expect_response, чтобы не конфликтовать с page.on('response')."""
                 try:
-                    with page.expect_response(pred, timeout=50000) as resp_info:
-                        page.goto(page_url, wait_until="load", timeout=50000)
-                    resp_info.value
+                    page.goto(page_url, wait_until="load", timeout=50000)
                 except Exception as e:
-                    print(f"[Страница {current_page}] expect_response: {e}")
-                    try:
-                        page.goto(page_url, wait_until="load", timeout=50000)
-                    except Exception as e2:
-                        print(f"[Страница {current_page}] goto: {e2}")
+                    print(f"[Страница {current_page}] goto: {e}")
                 time.sleep(1)
             
             try:
