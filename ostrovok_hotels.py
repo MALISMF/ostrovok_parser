@@ -1,10 +1,12 @@
 from playwright.sync_api import sync_playwright
 import time
 import sys
+import os
 import csv
 import json
 from pathlib import Path
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
+from zoneinfo import ZoneInfo
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 # Настройка stdout для корректного вывода Юникода
@@ -19,9 +21,17 @@ class OstrovokHotelsDailyParser:
         self.all_hotels = []
         self.current_dir = Path(__file__).parent
     
+    def _run_date(self):
+        """Дата запуска: RUN_TZ (например Europe/Moscow) или UTC для консистентности в CI."""
+        tz_name = os.environ.get("RUN_TZ", "UTC")
+        try:
+            return datetime.now(ZoneInfo(tz_name)).date()
+        except Exception:
+            return date.today()
+    
     def get_all_hotels_list(self):
         """Основная функция для парсинга списка отелей на следующие 2 дня"""
-        today = date.today()
+        today = self._run_date()
         arrival_date = today + timedelta(days=1)
         departure_date = today + timedelta(days=2)
         search_url = self._build_search_url(arrival_date, departure_date)
@@ -46,6 +56,7 @@ class OstrovokHotelsDailyParser:
             browser.close()
         
         if self.all_hotels:
+            self._deduplicate_hotels()
             self._save_to_csv()
             print(f"\nПарсинг завершён. Всего обработано {len(self.all_hotels)} отелей.")
         else:
@@ -85,8 +96,8 @@ class OstrovokHotelsDailyParser:
                                 if extracted_hotels:
                                     self.all_hotels.extend(extracted_hotels)
                                     print(f"Перехвачено и извлечено {len(extracted_hotels)} отелей. Всего: {len(self.all_hotels)}")
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f"[API] Ошибка разбора ответа: {e}")
         
         page.on("response", handle_response)
     
@@ -117,14 +128,18 @@ class OstrovokHotelsDailyParser:
                     with page.expect_response(pred, timeout=50000) as resp_info:
                         page.goto(page_url, wait_until="load", timeout=50000)
                     resp_info.value
-                except Exception:
-                    page.goto(page_url, wait_until="load", timeout=50000)
+                except Exception as e:
+                    print(f"[Страница {current_page}] expect_response: {e}")
+                    try:
+                        page.goto(page_url, wait_until="load", timeout=50000)
+                    except Exception as e2:
+                        print(f"[Страница {current_page}] goto: {e2}")
                 time.sleep(1)
             
             try:
                 _load_page_and_wait_for_api()
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[Страница {current_page}] Загрузка: {e}")
             
             # Дожидаемся появления отелей (обработчик ответа мог сработать чуть позже)
             max_wait_time = 20
@@ -144,14 +159,25 @@ class OstrovokHotelsDailyParser:
                     time.sleep(0.4)
                 hotels_added = len(self.all_hotels) - hotels_before
             
-            if hotels_added == 0 and current_page <= 2:
-                print(f"Повторная загрузка страницы {current_page}...")
+            # Повторная загрузка при 0 отелей на любой странице (в CI ответ часто приходит со 2–3 попытки)
+            retries_left = 2
+            while hotels_added == 0 and retries_left > 0:
+                retries_left -= 1
+                print(f"Повторная загрузка страницы {current_page} (осталось попыток: {retries_left + 1})...")
                 try:
                     _load_page_and_wait_for_api()
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f"[Повтор страницы {current_page}] {e}")
                 start_time = time.time()
-                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < 25:
+                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < 28:
+                    time.sleep(0.5)
+                hotels_added = len(self.all_hotels) - hotels_before
+            
+            # Если 0 отелей — финальное ожидание (в CI ответ API часто приходит с большой задержкой)
+            if hotels_added == 0:
+                print(f"Ожидание ответа для страницы {current_page} (до 55 с)...")
+                start_time = time.time()
+                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < 55:
                     time.sleep(0.5)
                 hotels_added = len(self.all_hotels) - hotels_before
             
@@ -224,12 +250,26 @@ class OstrovokHotelsDailyParser:
         
         return hotels_list
     
+    def _deduplicate_hotels(self):
+        """Удаление дубликатов по (ota_hotel_id, master_id), порядок сохраняется."""
+        seen = set()
+        unique = []
+        for h in self.all_hotels:
+            key = (h.get("ota_hotel_id") or "", h.get("master_id") or "")
+            if key not in seen:
+                seen.add(key)
+                unique.append(h)
+        removed = len(self.all_hotels) - len(unique)
+        if removed:
+            print(f"Убрано дубликатов: {removed}. Уникальных отелей: {len(unique)}")
+        self.all_hotels = unique
+    
     def _save_to_csv(self):
         """Сохранение списка отелей в CSV файл (tables/hotels/YYYY-MM-DD.csv)"""
         if not self.all_hotels:
             return
         
-        run_date = date.today()
+        run_date = self._run_date()
         output_dir = self.current_dir / 'tables' / 'hotels'
         output_dir.mkdir(parents=True, exist_ok=True)
         csv_filename = output_dir / f'{run_date.isoformat()}.csv'
