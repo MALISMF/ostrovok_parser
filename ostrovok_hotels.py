@@ -8,9 +8,10 @@ from datetime import date, timedelta, datetime
 from zoneinfo import ZoneInfo
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
-# Настройка stdout для корректного вывода Юникода
+# Настройка stdout для корректного вывода Юникода и сброс буфера в CI
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(line_buffering=True)
 
 class OstrovokHotelsDailyParser:
     def __init__(self):
@@ -30,6 +31,7 @@ class OstrovokHotelsDailyParser:
     
     def get_all_hotels_list(self):
         """Основная функция для парсинга списка отелей на следующие 2 дня"""
+        print("Запуск парсера отелей...", flush=True)
         today = self._run_date()
         arrival_date = today + timedelta(days=1)
         departure_date = today + timedelta(days=2)
