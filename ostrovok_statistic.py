@@ -6,7 +6,7 @@ from pathlib import Path
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 from collections import defaultdict
-from log_config import setup_logging, get_log_file_path
+from log_config import setup_logging, get_log_file_path, send_telegram_summary
 
 # Настройка stdout для корректного вывода Юникода
 if sys.stdout.encoding != 'utf-8':
@@ -157,12 +157,15 @@ def generate_statistics(run_date=None):
             writer.writerows(statistics)
         logger.info("Статистика сохранена в %s", output_csv)
         logger.info("Обработано %s отелей", len(statistics))
+        return len(statistics)
     except Exception as e:
         logger.error("Ошибка при сохранении статистики: %s", e)
+        return None
 
 
 if __name__ == "__main__":
     run_date = _run_date()
     setup_logging(log_file=get_log_file_path(run_date))
 
-    generate_statistics()
+    count = generate_statistics()
+    send_telegram_summary(f"Ostrovok: статистика сформирована. Отелей в отчёте: {count or 0}. Дата: {run_date}.")

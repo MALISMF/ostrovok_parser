@@ -9,7 +9,7 @@ from datetime import date, timedelta, datetime
 from zoneinfo import ZoneInfo
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
-from log_config import setup_logging, get_log_file_path
+from log_config import setup_logging, get_log_file_path, send_telegram_summary
 
 # Настройка stdout для корректного вывода Юникода и сброс буфера в CI
 if sys.stdout.encoding != 'utf-8':
@@ -282,4 +282,5 @@ if __name__ == "__main__":
     setup_logging(log_file=get_log_file_path(run_date))
 
     parser = OstrovokHotelsDailyParser()
-    parser.get_all_hotels_list()
+    result = parser.get_all_hotels_list()
+    send_telegram_summary(f"Ostrovok: парсинг отелей завершён. Отелей: {len(result)}. Дата: {run_date}.")

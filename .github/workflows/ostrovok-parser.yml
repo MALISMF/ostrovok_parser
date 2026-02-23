@@ -34,18 +34,24 @@ jobs:
         env:
           RUN_TZ: Asia/Irkutsk
           PYTHONUNBUFFERED: 1
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       - name: Run Ostrovok rooms parser
         run: python -u ostrovok_rooms.py
         env:
           RUN_TZ: Asia/Irkutsk
           PYTHONUNBUFFERED: 1
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       - name: Run Ostrovok statistic
         run: python -u ostrovok_statistic.py
         env:
           RUN_TZ: Asia/Irkutsk
           PYTHONUNBUFFERED: 1
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       - name: Configure Git
         run: |

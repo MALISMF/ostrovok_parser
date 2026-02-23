@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 from datetime import date, timedelta, datetime
 from zoneinfo import ZoneInfo
 from capacity_utils import compute_max_capacity
-from log_config import setup_logging, get_log_file_path
+from log_config import setup_logging, get_log_file_path, send_telegram_summary
 
 # Настройка stdout для корректного вывода Юникода
 if sys.stdout.encoding != 'utf-8':
@@ -411,4 +411,5 @@ if __name__ == "__main__":
     setup_logging(log_file=get_log_file_path(run_date))
 
     parser = OstrovokRoomsDailyParser()
-    parser.get_all_rooms()
+    result = parser.get_all_rooms()
+    send_telegram_summary(f"Ostrovok: парсинг номеров завершён. Номеров: {len(result)}. Дата: {run_date}.")

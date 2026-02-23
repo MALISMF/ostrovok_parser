@@ -1,17 +1,62 @@
-"""Общая настройка логирования: консоль + файл (по желанию). Папка логов — logs в корне проекта."""
+"""Общая настройка логирования: консоль + файл (по желанию). Папка логов — logs в корне проекта.
+Telegram: при TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID ошибки уходят в Telegram,
+итог парсинга — через send_telegram_summary()."""
 import logging
 import os
 import sys
 from pathlib import Path
 
+try:
+    import requests
+except ImportError:
+    requests = None
+
 # Папка логов в корне проекта (рядом с log_config.py)
 LOGS_DIR = Path(__file__).resolve().parent / "logs"
+TELEGRAM_MESSAGE_MAX_LENGTH = 4096
 
 
 def get_log_file_path(run_date):
     """Путь к файлу лога за указанную дату: logs/YYYY-MM-DD.log в корне проекта."""
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
     return LOGS_DIR / f"{run_date}.log"
+
+
+def _send_telegram(text):
+    """Отправить одно сообщение в Telegram. Возвращает True при успехе."""
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    if not token or not chat_id or not requests:
+        return False
+    text = (text or "").strip()[:TELEGRAM_MESSAGE_MAX_LENGTH]
+    if not text:
+        return False
+    try:
+        r = requests.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            json={"chat_id": chat_id, "text": text, "disable_web_page_preview": True},
+            timeout=10,
+        )
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
+def send_telegram_summary(message):
+    """Отправить итог парсинга в Telegram (если заданы TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID)."""
+    _send_telegram(message)
+
+
+class TelegramHandler(logging.Handler):
+    """Отправляет в Telegram только записи уровня ERROR."""
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            if msg:
+                _send_telegram(f"[Ошибка] {msg}")
+        except Exception:
+            self.handleError(record)
 
 
 def setup_logging(
@@ -30,6 +75,12 @@ def setup_logging(
         fh = logging.FileHandler(log_file, mode="a", encoding="utf-8")
         fh.setFormatter(logging.Formatter(format_string, datefmt=date_fmt))
         handlers.append(fh)
+
+    if os.environ.get("TELEGRAM_BOT_TOKEN") and os.environ.get("TELEGRAM_CHAT_ID"):
+        th = TelegramHandler()
+        th.setLevel(logging.ERROR)
+        th.setFormatter(logging.Formatter("%(name)s: %(message)s"))
+        handlers.append(th)
 
     logging.basicConfig(
         level=level,
