@@ -13,6 +13,10 @@ if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 sys.stdout.reconfigure(line_buffering=True)
 
+def _is_ci():
+    return os.environ.get("GITHUB_ACTIONS") == "true" or os.environ.get("CI") == "true"
+
+
 class OstrovokHotelsDailyParser:
     def __init__(self):
         self.base_url = "https://ostrovok.ru/hotel/russia/western_siberia_irkutsk_oblast_multi/"
@@ -20,6 +24,9 @@ class OstrovokHotelsDailyParser:
         self.region_id = "965821539"  # ID региона для Иркутской области
         self.all_hotels = []
         self.current_dir = Path(__file__).parent
+        self.ci = _is_ci()
+        if self.ci:
+            print("Режим CI: увеличенные таймауты и ожидание networkidle.", flush=True)
     
     def _run_date(self):
         """Дата запуска по RUN_TZ (по умолчанию Asia/Irkutsk)."""
@@ -53,7 +60,8 @@ class OstrovokHotelsDailyParser:
             
             self._setup_response_interceptor(page)
             self._parse_all_pages_with_pagination(page, search_url)
-            
+            # Даём время запоздалым ответам API прийти до закрытия (в CI дольше)
+            time.sleep(15 if self.ci else 8)
             browser.close()
         
         if self.all_hotels:
@@ -99,8 +107,9 @@ class OstrovokHotelsDailyParser:
                                     print(f"Перехвачено и извлечено {len(extracted_hotels)} отелей. Всего: {len(self.all_hotels)}")
                 except Exception as e:
                     msg = str(e)
-                    # Не логировать известную гонку: тело ответа уже недоступно (навигация/освобождение ресурса)
-                    if "No resource with given identifier" not in msg and "getResponseBody" not in msg:
+                    # Не логировать известные гонки: тело/контекст уже недоступны
+                    if ("No resource with given identifier" not in msg and "getResponseBody" not in msg
+                            and "Target page, context or browser has been closed" not in msg):
                         print(f"[API] Ошибка разбора ответа: {e}")
         
         page.on("response", handle_response)
@@ -120,39 +129,46 @@ class OstrovokHotelsDailyParser:
             
             print(f"\n--- Страница {current_page} ---")
             
+            goto_timeout = 60000 if self.ci else 50000
+            
             def _load_page_and_wait_for_api():
-                """Переход на страницу. Без expect_response, чтобы не конфликтовать с page.on('response')."""
+                """Переход на страницу + в CI ожидание networkidle (все запросы страницы завершены)."""
                 try:
-                    page.goto(page_url, wait_until="load", timeout=50000)
+                    page.goto(page_url, wait_until="load", timeout=goto_timeout)
                 except Exception as e:
                     print(f"[Страница {current_page}] goto: {e}")
-                time.sleep(1)
+                if self.ci:
+                    try:
+                        page.wait_for_load_state("networkidle", timeout=45000)
+                    except Exception:
+                        pass
+                time.sleep(2 if self.ci else 1)
             
             try:
                 _load_page_and_wait_for_api()
             except Exception as e:
                 print(f"[Страница {current_page}] Загрузка: {e}")
             
-            # Дожидаемся появления отелей (обработчик ответа мог сработать чуть позже)
-            max_wait_time = 20
+            # Дожидаемся появления отелей (в CI дольше — медленная сеть)
+            max_wait_time = 45 if self.ci else 20
             start_time = time.time()
             while len(self.all_hotels) == hotels_before and (time.time() - start_time) < max_wait_time:
-                time.sleep(0.4)
+                time.sleep(0.5)
                 if len(self.all_hotels) > hotels_before:
                     break
-            
             hotels_added = len(self.all_hotels) - hotels_before
             
-            # Повторная попытка той же страницы при 0 отелей (в CI часто срабатывает со 2-го раза)
             if hotels_added == 0:
-                time.sleep(2)
+                time.sleep(3 if self.ci else 2)
                 start_time = time.time()
-                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < 12:
-                    time.sleep(0.4)
+                extra = 25 if self.ci else 12
+                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < extra:
+                    time.sleep(0.5)
                 hotels_added = len(self.all_hotels) - hotels_before
             
-            # Повторная загрузка при 0 отелей на любой странице (в CI ответ часто приходит со 2–3 попытки)
-            retries_left = 2
+            # Повторные загрузки страницы (в CI больше попыток)
+            retries_left = 3 if self.ci else 2
+            retry_wait = 45 if self.ci else 28
             while hotels_added == 0 and retries_left > 0:
                 retries_left -= 1
                 print(f"Повторная загрузка страницы {current_page} (осталось попыток: {retries_left + 1})...")
@@ -161,15 +177,16 @@ class OstrovokHotelsDailyParser:
                 except Exception as e:
                     print(f"[Повтор страницы {current_page}] {e}")
                 start_time = time.time()
-                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < 28:
+                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < retry_wait:
                     time.sleep(0.5)
                 hotels_added = len(self.all_hotels) - hotels_before
             
-            # Если 0 отелей — финальное ожидание (в CI ответ API часто приходит с большой задержкой)
+            # Финальное ожидание (в CI до 90 с — ответы часто сильно запаздывают)
+            final_wait = 90 if self.ci else 55
             if hotels_added == 0:
-                print(f"Ожидание ответа для страницы {current_page} (до 55 с)...")
+                print(f"Ожидание ответа для страницы {current_page} (до {final_wait} с)...")
                 start_time = time.time()
-                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < 55:
+                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < final_wait:
                     time.sleep(0.5)
                 hotels_added = len(self.all_hotels) - hotels_before
             
@@ -180,7 +197,7 @@ class OstrovokHotelsDailyParser:
                 break
             
             current_page += 1
-            time.sleep(1.5)
+            time.sleep(2.5 if self.ci else 1.5)
         
         print(f"\n=== Всего собрано отелей со всех страниц: {len(self.all_hotels)} ===")
     
