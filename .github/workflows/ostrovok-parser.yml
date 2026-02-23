@@ -52,9 +52,9 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-      - name: Commit and push daily tables
+      - name: Commit and push daily tables and logs
         run: |
-          git add tables/
+          git add tables/ logs/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

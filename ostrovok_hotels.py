@@ -163,38 +163,6 @@ class OstrovokHotelsDailyParser:
                     break
             hotels_added = len(self.all_hotels) - hotels_before
             
-            if hotels_added == 0:
-                time.sleep(3 if self.ci else 2)
-                start_time = time.time()
-                extra = 25 if self.ci else 12
-                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < extra:
-                    time.sleep(0.5)
-                hotels_added = len(self.all_hotels) - hotels_before
-            
-            # Повторные загрузки страницы (в CI больше попыток)
-            retries_left = 3 if self.ci else 2
-            retry_wait = 45 if self.ci else 28
-            while hotels_added == 0 and retries_left > 0:
-                retries_left -= 1
-                logger.info("Повторная загрузка страницы %s (осталось попыток: %s)...", current_page, retries_left + 1)
-                try:
-                    _load_page_and_wait_for_api()
-                except Exception as e:
-                    logger.warning("[Повтор страницы %s] %s", current_page, e)
-                start_time = time.time()
-                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < retry_wait:
-                    time.sleep(0.5)
-                hotels_added = len(self.all_hotels) - hotels_before
-            
-            # Финальное ожидание (в CI до 90 с — ответы часто сильно запаздывают)
-            final_wait = 90 if self.ci else 55
-            if hotels_added == 0:
-                logger.info("Ожидание ответа для страницы %s (до %s с)...", current_page, final_wait)
-                start_time = time.time()
-                while len(self.all_hotels) == hotels_before and (time.time() - start_time) < final_wait:
-                    time.sleep(0.5)
-                hotels_added = len(self.all_hotels) - hotels_before
-            
             if hotels_added > 0:
                 logger.info("Добавлено %s отелей со страницы %s. Переход на следующую страницу...", hotels_added, current_page)
             else:
