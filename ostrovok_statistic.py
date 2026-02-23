@@ -1,14 +1,19 @@
 import csv
 import sys
 import os
+import logging
 from pathlib import Path
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 from collections import defaultdict
+from log_config import setup_logging
 
 # Настройка stdout для корректного вывода Юникода
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
+
+logger = logging.getLogger(__name__)
+
 
 def _run_date():
     """Дата запуска по RUN_TZ (по умолчанию Asia/Irkutsk)."""
@@ -45,7 +50,7 @@ def generate_statistics(run_date=None):
                         'rooms_number': row.get('rooms_number', '')
                     }
     except Exception as e:
-        print(f"Ошибка при чтении {hotels_csv}: {e}")
+        logger.error("Ошибка при чтении %s: %s", hotels_csv, e)
         return
     
     # Собираем статистику по номерам
@@ -65,6 +70,7 @@ def generate_statistics(run_date=None):
                 
                 # Суммируем allotment
                 allotment = row.get('allotment', '')
+                allotment_value = 0
                 try:
                     allotment_value = int(allotment) if allotment else 0
                     rooms_stats[ota_hotel_id]['free_rooms_amount'] += allotment_value
@@ -91,7 +97,7 @@ def generate_statistics(run_date=None):
                     except (ValueError, TypeError):
                         pass
     except Exception as e:
-        print(f"Ошибка при чтении {rooms_csv}: {e}")
+        logger.error("Ошибка при чтении %s: %s", rooms_csv, e)
         return
     
     # Формируем итоговые данные (дата в колонке date = дата сбора, как в путях к файлам)
@@ -149,10 +155,16 @@ def generate_statistics(run_date=None):
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=',', quoting=csv.QUOTE_MINIMAL)
             writer.writeheader()
             writer.writerows(statistics)
-        print(f"Статистика сохранена в {output_csv}")
-        print(f"Обработано {len(statistics)} отелей")
+        logger.info("Статистика сохранена в %s", output_csv)
+        logger.info("Обработано %s отелей", len(statistics))
     except Exception as e:
-        print(f"Ошибка при сохранении статистики: {e}")
+        logger.error("Ошибка при сохранении статистики: %s", e)
+
 
 if __name__ == "__main__":
+    run_date = _run_date()
+    log_dir = Path(__file__).parent / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    setup_logging(log_file=log_dir / f"{run_date}.log")
+
     generate_statistics()

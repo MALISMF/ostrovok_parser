@@ -3,15 +3,21 @@ import time
 import sys
 import os
 import csv
+import logging
 from pathlib import Path
 from datetime import date, timedelta, datetime
 from zoneinfo import ZoneInfo
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
+from log_config import setup_logging
+
 # Настройка stdout для корректного вывода Юникода и сброс буфера в CI
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 sys.stdout.reconfigure(line_buffering=True)
+
+logger = logging.getLogger(__name__)
+
 
 def _is_ci():
     return os.environ.get("GITHUB_ACTIONS") == "true" or os.environ.get("CI") == "true"
@@ -26,7 +32,7 @@ class OstrovokHotelsDailyParser:
         self.current_dir = Path(__file__).parent
         self.ci = _is_ci()
         if self.ci:
-            print("Режим CI: увеличенные таймауты и ожидание networkidle.", flush=True)
+            logger.info("Режим CI: увеличенные таймауты и ожидание networkidle.")
     
     def _run_date(self):
         """Дата запуска по RUN_TZ (по умолчанию Asia/Irkutsk)."""
@@ -38,13 +44,13 @@ class OstrovokHotelsDailyParser:
     
     def get_all_hotels_list(self):
         """Основная функция для парсинга списка отелей на следующие 2 дня"""
-        print("Запуск парсера отелей...", flush=True)
+        logger.info("Запуск парсера отелей...")
         today = self._run_date()
         arrival_date = today + timedelta(days=1)
         departure_date = today + timedelta(days=2)
         search_url = self._build_search_url(arrival_date, departure_date)
         
-        print(f"Даты бронирования: {arrival_date.strftime('%d.%m.%Y')} - {departure_date.strftime('%d.%m.%Y')}")
+        logger.info("Даты бронирования: %s - %s", arrival_date.strftime('%d.%m.%Y'), departure_date.strftime('%d.%m.%Y'))
         
         with sync_playwright() as p:
             browser = p.chromium.launch(
@@ -67,9 +73,9 @@ class OstrovokHotelsDailyParser:
         if self.all_hotels:
             self._deduplicate_hotels()
             self._save_to_csv()
-            print(f"\nПарсинг завершён. Всего обработано {len(self.all_hotels)} отелей.")
+            logger.info("Парсинг завершён. Всего обработано %s отелей.", len(self.all_hotels))
         else:
-            print("\nНе удалось извлечь данные об отелях.")
+            logger.warning("Не удалось извлечь данные об отелях.")
         
         return self.all_hotels
             
@@ -104,13 +110,12 @@ class OstrovokHotelsDailyParser:
                                 extracted_hotels = self._extract_hotels_from_json(json_data)
                                 if extracted_hotels:
                                     self.all_hotels.extend(extracted_hotels)
-                                    print(f"Перехвачено и извлечено {len(extracted_hotels)} отелей. Всего: {len(self.all_hotels)}")
+                                    logger.info("Перехвачено и извлечено %s отелей. Всего: %s", len(extracted_hotels), len(self.all_hotels))
                 except Exception as e:
                     msg = str(e)
-                    # Не логировать известные гонки: тело/контекст уже недоступны
                     if ("No resource with given identifier" not in msg and "getResponseBody" not in msg
                             and "Target page, context or browser has been closed" not in msg):
-                        print(f"[API] Ошибка разбора ответа: {e}")
+                        logger.error("Ошибка разбора ответа API: %s", e)
         
         page.on("response", handle_response)
     
@@ -127,7 +132,7 @@ class OstrovokHotelsDailyParser:
             else:
                 page_url = self._add_page_to_url(base_search_url, current_page)
             
-            print(f"\n--- Страница {current_page} ---")
+            logger.info("--- Страница %s ---", current_page)
             
             goto_timeout = 60000 if self.ci else 50000
             
@@ -136,7 +141,7 @@ class OstrovokHotelsDailyParser:
                 try:
                     page.goto(page_url, wait_until="load", timeout=goto_timeout)
                 except Exception as e:
-                    print(f"[Страница {current_page}] goto: {e}")
+                    logger.warning("[Страница %s] goto: %s", current_page, e)
                 if self.ci:
                     try:
                         page.wait_for_load_state("networkidle", timeout=45000)
@@ -147,7 +152,7 @@ class OstrovokHotelsDailyParser:
             try:
                 _load_page_and_wait_for_api()
             except Exception as e:
-                print(f"[Страница {current_page}] Загрузка: {e}")
+                logger.warning("[Страница %s] Загрузка: %s", current_page, e)
             
             # Дожидаемся появления отелей (в CI дольше — медленная сеть)
             max_wait_time = 45 if self.ci else 20
@@ -171,11 +176,11 @@ class OstrovokHotelsDailyParser:
             retry_wait = 45 if self.ci else 28
             while hotels_added == 0 and retries_left > 0:
                 retries_left -= 1
-                print(f"Повторная загрузка страницы {current_page} (осталось попыток: {retries_left + 1})...")
+                logger.info("Повторная загрузка страницы %s (осталось попыток: %s)...", current_page, retries_left + 1)
                 try:
                     _load_page_and_wait_for_api()
                 except Exception as e:
-                    print(f"[Повтор страницы {current_page}] {e}")
+                    logger.warning("[Повтор страницы %s] %s", current_page, e)
                 start_time = time.time()
                 while len(self.all_hotels) == hotels_before and (time.time() - start_time) < retry_wait:
                     time.sleep(0.5)
@@ -184,22 +189,22 @@ class OstrovokHotelsDailyParser:
             # Финальное ожидание (в CI до 90 с — ответы часто сильно запаздывают)
             final_wait = 90 if self.ci else 55
             if hotels_added == 0:
-                print(f"Ожидание ответа для страницы {current_page} (до {final_wait} с)...")
+                logger.info("Ожидание ответа для страницы %s (до %s с)...", current_page, final_wait)
                 start_time = time.time()
                 while len(self.all_hotels) == hotels_before and (time.time() - start_time) < final_wait:
                     time.sleep(0.5)
                 hotels_added = len(self.all_hotels) - hotels_before
             
             if hotels_added > 0:
-                print(f"Добавлено {hotels_added} отелей со страницы {current_page}. Переход на следующую страницу...")
+                logger.info("Добавлено %s отелей со страницы %s. Переход на следующую страницу...", hotels_added, current_page)
             else:
-                print(f"На странице {current_page} отелей не получено. Конец списка.")
+                logger.warning("На странице %s отелей не получено. Конец списка.", current_page)
                 break
             
             current_page += 1
             time.sleep(2.5 if self.ci else 1.5)
         
-        print(f"\n=== Всего собрано отелей со всех страниц: {len(self.all_hotels)} ===")
+        logger.info("=== Всего собрано отелей со всех страниц: %s ===", len(self.all_hotels))
     
     def _add_page_to_url(self, url, page_number):
         """Добавление номера страницы к URL"""
@@ -270,7 +275,7 @@ class OstrovokHotelsDailyParser:
                 unique.append(h)
         removed = len(self.all_hotels) - len(unique)
         if removed:
-            print(f"Убрано дубликатов: {removed}. Уникальных отелей: {len(unique)}")
+            logger.info("Убрано дубликатов: %s. Уникальных отелей: %s", removed, len(unique))
         self.all_hotels = unique
     
     def _save_to_csv(self):
@@ -291,10 +296,24 @@ class OstrovokHotelsDailyParser:
                 writer.writeheader()
                 for hotel in self.all_hotels:
                     writer.writerow(hotel)
-            print(f"Сохранено {len(self.all_hotels)} отелей в {csv_filename}")
+            logger.info("Сохранено %s отелей в %s", len(self.all_hotels), csv_filename)
         except Exception as e:
-            print(f"Ошибка при сохранении CSV: {e}")
-    
+            logger.error("Ошибка при сохранении CSV: %s", e)
+
+
+def _run_date_for_log():
+    tz_name = os.environ.get("RUN_TZ", "Asia/Irkutsk")
+    try:
+        return datetime.now(ZoneInfo(tz_name)).date()
+    except Exception:
+        return date.today()
+
+
 if __name__ == "__main__":
+    run_date = _run_date_for_log()
+    log_dir = Path(__file__).parent / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    setup_logging(log_file=log_dir / f"{run_date}.log")
+
     parser = OstrovokHotelsDailyParser()
     parser.get_all_hotels_list()

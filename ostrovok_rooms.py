@@ -5,16 +5,20 @@ import os
 import json
 import csv
 import uuid
+import logging
 import requests
 from pathlib import Path
 from urllib.parse import urlparse
 from datetime import date, timedelta, datetime
 from zoneinfo import ZoneInfo
 from capacity_utils import compute_max_capacity
+from log_config import setup_logging
 
 # Настройка stdout для корректного вывода Юникода
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
+
+logger = logging.getLogger(__name__)
 
 class OstrovokRoomsDailyParser:
     def __init__(self):
@@ -33,7 +37,7 @@ class OstrovokRoomsDailyParser:
     
     def _get_cookies_from_browser(self):
         """Получение куки через реальный браузер"""
-        print("Запуск браузера для получения куки...")
+        logger.info("Запуск браузера для получения куки...")
         
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
@@ -51,7 +55,7 @@ class OstrovokRoomsDailyParser:
             
             browser.close()
             
-        print(f"Получено {len(self.cookies)} куки")
+        logger.info("Получено %s куки", len(self.cookies))
         return self.cookies
 
     def _extract_hotel_id(self, hotel_url):
@@ -99,7 +103,7 @@ class OstrovokRoomsDailyParser:
             if response.status_code == 200:
                 return response.json()
             else:
-                print(f"Ошибка: {response.status_code}")
+                logger.warning("Ошибка: %s", response.status_code)
                 return None
                 
         except Exception:
@@ -302,14 +306,14 @@ class OstrovokRoomsDailyParser:
         hotel_id = self._extract_hotel_id(hotel_url) if hotel_url else None
 
         if not hotel_id:
-            print(f"Пропускаю {hotel_name}: не найден hotel_id")
+            logger.warning("Пропускаю %s: не найден hotel_id", hotel_name)
             return []
 
-        print(f"Запрашиваю {hotel_name} ({hotel_id})")
+        logger.info("Запрашиваю %s (%s)", hotel_name, hotel_id)
         result = self._search_hotel(hotel_id, arrival_date, departure_date)
 
         if not result:
-            print(f"Нет данных для {hotel_name}")
+            logger.warning("Нет данных для %s", hotel_name)
             return []
 
         rooms_data = self._extract_room_data(result)
@@ -321,7 +325,7 @@ class OstrovokRoomsDailyParser:
         arrival_date = today + timedelta(days=1)
         departure_date = today + timedelta(days=2)
         
-        print(f"Даты бронирования: {arrival_date.strftime('%d.%m.%Y')} - {departure_date.strftime('%d.%m.%Y')}")
+        logger.info("Даты бронирования: %s - %s", arrival_date.strftime('%d.%m.%Y'), departure_date.strftime('%d.%m.%Y'))
         
         if csv_path is None:
             csv_path = self.current_dir / 'tables' / 'hotels' / f'{today.isoformat()}.csv'
@@ -335,7 +339,7 @@ class OstrovokRoomsDailyParser:
         hotels = self._read_hotels_from_csv(csv_path)
         
         if not hotels:
-            print("\nНе удалось загрузить список отелей.")
+            logger.warning("Не удалось загрузить список отелей.")
             return []
         
         # Обрабатываем каждый отель
@@ -346,13 +350,13 @@ class OstrovokRoomsDailyParser:
                 all_rooms_data.extend(rooms_data)
                 # Для вывода считаем только реальные номера (строки-заглушки имеют пустой rg_hash)
                 rooms_count = sum(1 for r in rooms_data if r.get("rg_hash"))
-                print(f"Сохранено {rooms_count} номеров для {hotel_row.get('hotel_name') or hotel_row.get('name', 'unknown')}")
+                logger.info("Сохранено %s номеров для %s", rooms_count, hotel_row.get('hotel_name') or hotel_row.get('name', 'unknown'))
         
         if all_rooms_data:
             self._save_to_csv(all_rooms_data)
-            print(f"\nПарсинг завершён. Всего обработано {len(all_rooms_data)} номеров.")
+            logger.info("Парсинг завершён. Всего обработано %s номеров.", len(all_rooms_data))
         else:
-            print("\nНе удалось извлечь данные о номерах.")
+            logger.warning("Не удалось извлечь данные о номерах.")
         
         return all_rooms_data
     
@@ -389,10 +393,24 @@ class OstrovokRoomsDailyParser:
                 writer.writeheader()
                 for room in rooms_data:
                     writer.writerow(room)
-            print(f"Сохранено {len(rooms_data)} номеров в {csv_filename}")
+            logger.info("Сохранено %s номеров в %s", len(rooms_data), csv_filename)
         except Exception as e:
-            print(f"Ошибка при сохранении CSV: {e}")
+            logger.error("Ошибка при сохранении CSV: %s", e)
+
+
+def _run_date_for_log():
+    tz_name = os.environ.get("RUN_TZ", "Asia/Irkutsk")
+    try:
+        return datetime.now(ZoneInfo(tz_name)).date()
+    except Exception:
+        return date.today()
+
 
 if __name__ == "__main__":
+    run_date = _run_date_for_log()
+    log_dir = Path(__file__).parent / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    setup_logging(log_file=log_dir / f"{run_date}.log")
+
     parser = OstrovokRoomsDailyParser()
     parser.get_all_rooms()
