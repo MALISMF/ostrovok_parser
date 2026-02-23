@@ -6,7 +6,7 @@ from pathlib import Path
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 from collections import defaultdict
-from log_config import setup_logging
+from log_config import setup_logging, get_log_file_path
 
 # Настройка stdout для корректного вывода Юникода
 if sys.stdout.encoding != 'utf-8':
@@ -163,8 +163,6 @@ def generate_statistics(run_date=None):
 
 if __name__ == "__main__":
     run_date = _run_date()
-    log_dir = Path(__file__).parent / "logs"
-    log_dir.mkdir(parents=True, exist_ok=True)
-    setup_logging(log_file=log_dir / f"{run_date}.log")
+    setup_logging(log_file=get_log_file_path(run_date))
 
     generate_statistics()

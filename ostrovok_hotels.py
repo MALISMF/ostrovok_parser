@@ -9,7 +9,7 @@ from datetime import date, timedelta, datetime
 from zoneinfo import ZoneInfo
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
-from log_config import setup_logging
+from log_config import setup_logging, get_log_file_path
 
 # Настройка stdout для корректного вывода Юникода и сброс буфера в CI
 if sys.stdout.encoding != 'utf-8':
@@ -311,9 +311,7 @@ def _run_date_for_log():
 
 if __name__ == "__main__":
     run_date = _run_date_for_log()
-    log_dir = Path(__file__).parent / "logs"
-    log_dir.mkdir(parents=True, exist_ok=True)
-    setup_logging(log_file=log_dir / f"{run_date}.log")
+    setup_logging(log_file=get_log_file_path(run_date))
 
     parser = OstrovokHotelsDailyParser()
     parser.get_all_hotels_list()

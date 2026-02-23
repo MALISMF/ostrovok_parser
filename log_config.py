@@ -1,7 +1,17 @@
-"""Общая настройка логирования: консоль + файл (по желанию)."""
+"""Общая настройка логирования: консоль + файл (по желанию). Папка логов — logs в корне проекта."""
 import logging
 import os
 import sys
+from pathlib import Path
+
+# Папка логов в корне проекта (рядом с log_config.py)
+LOGS_DIR = Path(__file__).resolve().parent / "logs"
+
+
+def get_log_file_path(run_date):
+    """Путь к файлу лога за указанную дату: logs/YYYY-MM-DD.log в корне проекта."""
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    return LOGS_DIR / f"{run_date}.log"
 
 
 def setup_logging(
