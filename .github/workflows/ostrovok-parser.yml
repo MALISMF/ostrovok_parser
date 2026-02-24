@@ -81,9 +81,9 @@ jobs:
           cd parsers_repo
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
-          rm -rf tables
-          cp -r ../tables tables
-          git add tables
+          rm -rf ostrovok-tables
+          cp -r ../tables ostrovok-tables
+          git add ostrovok-tables
           if git diff --staged --quiet; then
             echo "No changes to commit in parsers"
           else
