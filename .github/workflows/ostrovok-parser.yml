@@ -25,12 +25,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install playwright requests rapidfuzz
+          pip install playwright requests
           playwright install chromium
           playwright install-deps chromium
 
       - name: Run Ostrovok hotels parser
-        run: cd ostrovok_parser && python -u ostrovok_hotels.py
+        run: python -u ostrovok_hotels.py
         env:
           RUN_TZ: Asia/Irkutsk
           PYTHONUNBUFFERED: 1
@@ -38,7 +38,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       - name: Run Ostrovok rooms parser
-        run: cd ostrovok_parser && python -u ostrovok_rooms.py
+        run: python -u ostrovok_rooms.py
         env:
           RUN_TZ: Asia/Irkutsk
           PYTHONUNBUFFERED: 1
@@ -46,34 +46,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       - name: Run Ostrovok statistic
-        run: cd ostrovok_parser && python -u ostrovok_statistic.py
-
-      - name: Run Tvil hotels parser
-        run: cd tvil_parser && python -u tvil_hotels.py
-        env:
-          RUN_TZ: Asia/Irkutsk
-          PYTHONUNBUFFERED: 1
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-
-      - name: Run Tvil rooms parser
-        run: cd tvil_parser && python -u tvil_rooms.py
-        env:
-          RUN_TZ: Asia/Irkutsk
-          PYTHONUNBUFFERED: 1
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-
-      - name: Run Tvil statistic
-        run: cd tvil_parser && python -u tvil_statistic.py
-        env:
-          RUN_TZ: Asia/Irkutsk
-          PYTHONUNBUFFERED: 1
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-
-      - name: Merge sources (fuzzy matching)
-        run: python -u merge_sources.py
+        run: python -u ostrovok_statistic.py
         env:
           RUN_TZ: Asia/Irkutsk
           PYTHONUNBUFFERED: 1
@@ -87,11 +60,11 @@ jobs:
 
       - name: Commit and push daily tables and logs
         run: |
-          git add ostrovok_parser/tables/ tvil_parser/tables/ unified/ ostrovok_parser/logs/ tvil_parser/logs/
+          git add tables/ logs/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Daily data - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+            git commit -m "Ostrovok daily data - $(date +'%Y-%m-%d %H:%M:%S UTC')"
             git push
           fi
 
@@ -108,10 +81,9 @@ jobs:
           cd parsers_repo
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
-          rm -rf ostrovok
-          mkdir -p ostrovok
-          cp -r ../ostrovok_parser/tables ostrovok/tables
-          git add ostrovok
+          rm -rf tables
+          cp -r ../tables tables
+          git add tables
           if git diff --staged --quiet; then
             echo "No changes to commit in parsers"
           else
