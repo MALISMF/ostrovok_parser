@@ -247,12 +247,12 @@ class OstrovokHotelsDailyParser:
         self.all_hotels = unique
     
     def _save_to_csv(self):
-        """Сохранение списка отелей в CSV файл (tables/hotels/YYYY-MM-DD.csv)"""
+        """Сохранение списка отелей в CSV файл (daily/hotels/YYYY-MM-DD.csv)"""
         if not self.all_hotels:
             return
         
         run_date = self._run_date()
-        output_dir = self.current_dir / 'tables' / 'hotels'
+        output_dir = self.current_dir / 'daily' / 'hotels'
         output_dir.mkdir(parents=True, exist_ok=True)
         csv_filename = output_dir / f'{run_date.isoformat()}.csv'
         
