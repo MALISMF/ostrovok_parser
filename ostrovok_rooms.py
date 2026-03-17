@@ -328,7 +328,7 @@ class OstrovokRoomsDailyParser:
         logger.info("Даты бронирования: %s - %s", arrival_date.strftime('%d.%m.%Y'), departure_date.strftime('%d.%m.%Y'))
         
         if csv_path is None:
-            csv_path = self.current_dir / 'tables' / 'hotels' / f'{today.isoformat()}.csv'
+            csv_path = self.current_dir / 'daily' / 'hotels' / f'{today.isoformat()}.csv'
         else:
             csv_path = Path(csv_path)
         
@@ -361,12 +361,12 @@ class OstrovokRoomsDailyParser:
         return all_rooms_data
     
     def _save_to_csv(self, rooms_data):
-        """Сохраняет данные номеров в CSV файл (tables/rooms/YYYY-MM-DD.csv)"""
+        """Сохраняет данные номеров в CSV файл (daily/rooms/YYYY-MM-DD.csv)"""
         if not rooms_data:
             return
         
         run_date = self._run_date()
-        output_dir = self.current_dir / 'tables' / 'rooms'
+        output_dir = self.current_dir / 'daily' / 'rooms'
         output_dir.mkdir(parents=True, exist_ok=True)
         csv_filename = output_dir / f'{run_date.isoformat()}.csv'
         

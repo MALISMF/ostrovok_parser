@@ -26,15 +26,15 @@ def _run_date():
 
 def generate_statistics(run_date=None):
     """Генерирует статистику по отелям на основе данных из CSV файлов.
-    run_date — дата сбора (по умолчанию сегодня по RUN_TZ). Файлы: tables/hotels/{date}.csv, tables/rooms/{date}.csv → tables/statistics/{date}.csv"""
+    run_date — дата сбора (по умолчанию сегодня по RUN_TZ). Файлы: daily/hotels/{date}.csv, daily/rooms/{date}.csv → daily/statistics/{date}.csv"""
     
     current_dir = Path(__file__).parent
     if run_date is None:
         run_date = _run_date()
     date_str = run_date.isoformat()
-    hotels_csv = current_dir / 'tables' / 'hotels' / f'{date_str}.csv'
-    rooms_csv = current_dir / 'tables' / 'rooms' / f'{date_str}.csv'
-    output_csv = current_dir / 'tables' / 'statistics' / f'{date_str}.csv'
+    hotels_csv = current_dir / 'daily' / 'hotels' / f'{date_str}.csv'
+    rooms_csv = current_dir / 'daily' / 'rooms' / f'{date_str}.csv'
+    output_csv = current_dir / 'daily' / 'statistics' / f'{date_str}.csv'
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     
     # Читаем данные об отелях
