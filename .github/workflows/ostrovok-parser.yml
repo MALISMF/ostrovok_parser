@@ -60,7 +60,7 @@ jobs:
 
       - name: Commit and push daily tables and logs
         run: |
-          git add tables/ logs/
+          git add tables/ logs/ catalog/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
