@@ -222,8 +222,10 @@ class OstrovokHotelsDailyParser:
                     "name": name,
                     "name_en": static_vm.get("name_en", ""),
                     "address": static_vm.get("address", ""),
+                    "latitude": str(static_vm.get("latitude", "")),
+                    "longitude": str(static_vm.get("longitude", "")),
                     "url": url,
-                    "rooms_number": str(static_vm.get("rooms_number", ""))
+                    "rooms_number": str(static_vm.get("rooms_number", "")),
                 }
                 
                 hotels_list.append(hotel_data)
@@ -256,7 +258,18 @@ class OstrovokHotelsDailyParser:
         output_dir.mkdir(parents=True, exist_ok=True)
         csv_filename = output_dir / f'{run_date.isoformat()}.csv'
         
-        fieldnames = ['city', 'ota_hotel_id', 'master_id', 'name', 'name_en', 'address', 'url', 'rooms_number']
+        fieldnames = [
+            'city',
+            'ota_hotel_id',
+            'master_id',
+            'name',
+            'name_en',
+            'address',
+            'latitude',
+            'longitude',
+            'url',
+            'rooms_number'
+        ]
         
         try:
             with open(csv_filename, 'w', encoding='utf-8-sig', newline='') as csv_file:
@@ -276,7 +289,7 @@ class OstrovokHotelsCatalog:
 
     FIELDNAMES = [
         'ota_hotel_id', 'master_id', 'name', 'name_en',
-        'city', 'address', 'url', 'rooms_number',
+        'city', 'address', 'latitude', 'longitude', 'url', 'rooms_number',
         'first_seen_date', 'last_seen_date',
     ]
 
@@ -339,6 +352,8 @@ class OstrovokHotelsCatalog:
                     'name_en':      hotel.get('name_en', existing[hotel_id]['name_en']),
                     'city':         hotel.get('city', existing[hotel_id]['city']),
                     'address':      hotel.get('address', existing[hotel_id]['address']),
+                    'latitude':     hotel.get('latitude', existing[hotel_id].get('latitude', '')),
+                    'longitude':    hotel.get('longitude', existing[hotel_id].get('longitude', '')),
                     'url':          hotel.get('url', existing[hotel_id]['url']),
                     'rooms_number': hotel.get('rooms_number', existing[hotel_id]['rooms_number']),
                     'last_seen_date': today,
@@ -352,6 +367,8 @@ class OstrovokHotelsCatalog:
                     'name_en':        hotel.get('name_en', ''),
                     'city':           hotel.get('city', ''),
                     'address':        hotel.get('address', ''),
+                    'latitude':       hotel.get('latitude', ''),
+                    'longitude':      hotel.get('longitude', ''),
                     'url':            hotel.get('url', ''),
                     'rooms_number':   hotel.get('rooms_number', ''),
                     'first_seen_date': today,
