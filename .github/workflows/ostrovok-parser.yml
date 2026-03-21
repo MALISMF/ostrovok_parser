@@ -68,7 +68,7 @@ jobs:
             git push
           fi
 
-      - name: Push daily to MALISMF/parsers
+      - name: Push ostrovok data to MALISMF/parsers
         env:
           PARSERS_TOKEN: ${{ secrets.PARSERS_REPO_TOKEN }}
         run: |
@@ -81,12 +81,14 @@ jobs:
           cd parsers_repo
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
-          rm -rf ostrovok-daily
-          cp -r ../daily ostrovok-daily
-          git add ostrovok-daily
+          rm -rf ostrovok-daily ostrovok-data
+          mkdir -p ostrovok-data
+          cp -r ../daily ostrovok-data/daily
+          cp -r ../catalog ostrovok-data/catalog
+          git add ostrovok-data
           if git diff --staged --quiet; then
             echo "No changes to commit in parsers"
           else
-            git commit -m "Ostrovok daily data - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+            git commit -m "Ostrovok data update - $(date +'%Y-%m-%d %H:%M:%S UTC')"
             git push
           fi
