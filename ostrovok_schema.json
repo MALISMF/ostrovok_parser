@@ -1,0 +1,63 @@
+{
+  "known_endpoint": "/hotel/search/v2/site/serp",
+  "response_keys": [
+    "hotels",
+    "map_hotels",
+    "total_hotels",
+    "total_av_hotels",
+    "total_av_hotels_no_filter",
+    "search_finished",
+    "last_page",
+    "available_filter_params"
+  ],
+  "meta_keys": [],
+  "hotel_keys": [
+    "requested_hotel_id",
+    "ota_hotel_id",
+    "master_id",
+    "static_vm",
+    "rates",
+    "hotel_lookup_info",
+    "loyalty_index",
+    "sort_score"
+  ],
+  "static_vm_keys": [
+    "ostrovok_id",
+    "city",
+    "address",
+    "country",
+    "geoblock_v2",
+    "images",
+    "kind",
+    "lang",
+    "latitude",
+    "longitude",
+    "master_id",
+    "name",
+    "name_en",
+    "nearest_subways",
+    "awards",
+    "otahotel_id",
+    "rating",
+    "region_catalog_slug",
+    "region_id",
+    "region_name",
+    "room_groups",
+    "serp_filters",
+    "special_flags",
+    "ta_rating",
+    "region",
+    "search_region_center_distance",
+    "is_guru_hotel",
+    "has_secure_deposit",
+    "is_superhost"
+  ],
+  "hotel_keywords": [
+    "ota_hotel_id",
+    "master_id",
+    "static_vm",
+    "hotel_id"
+  ],
+  "keyword_threshold": 2,
+  "empty_page_threshold": 2
+}
