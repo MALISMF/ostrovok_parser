@@ -7,7 +7,6 @@
     "total_av_hotels",
     "total_av_hotels_no_filter",
     "search_finished",
-    "last_page",
     "available_filter_params"
   ],
   "meta_keys": [],
@@ -43,11 +42,13 @@
     "region_id",
     "region_name",
     "room_groups",
+    "rooms_number",
     "serp_filters",
     "special_flags",
     "ta_rating",
     "region",
     "search_region_center_distance",
+    "rating_total",
     "is_guru_hotel",
     "has_secure_deposit",
     "is_superhost"

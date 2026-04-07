@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 from log_config import setup_logging, get_log_file_path, send_telegram_summary
-from ostrovok_api_watcher import OstrovokApiWatcher  # [NEW]
+from ostrovok_api_watcher import OstrovokApiWatcher
 
 # Настройка stdout для корректного вывода Юникода и сброс буфера в CI
 if sys.stdout.encoding != 'utf-8':
@@ -32,11 +32,12 @@ class OstrovokHotelsDailyParser:
         self.all_hotels = []
         self.current_dir = Path(__file__).parent
         self.ci = _is_ci()
-        self.watcher = OstrovokApiWatcher(  # [NEW]
+        self.watcher = OstrovokApiWatcher(
             self.current_dir / 'ostrovok_schema.json',
             self.current_dir / 'debug',
         )
-        self._response_sample = None  # [NEW] образец ответа API для обновления схемы после прогона
+        self._response_sample = None  # образец ответа API для обновления схемы после прогона
+        self._schema_compared = False  # флаг — схема уже сравнивалась в этом прогоне
         if self.ci:
             logger.info("Режим CI: увеличенные таймауты и ожидание networkidle.")
     
@@ -73,11 +74,11 @@ class OstrovokHotelsDailyParser:
             self._setup_response_interceptor(page)
             self._parse_all_pages_with_pagination(page, search_url)
             # Даём время запоздалым ответам API прийти до закрытия (в CI дольше)
-            time.sleep(15 if self.ci else 8)
+            time.sleep(15 if self.ci else 15)
             browser.close()
         
         if self.all_hotels:
-            if self._response_sample is not None:  # [NEW]
+            if self._response_sample is not None:
                 self.watcher.save_working_schema(self._response_sample, self.api_endpoint)
             self._deduplicate_hotels()
             self._save_to_csv()
@@ -88,7 +89,7 @@ class OstrovokHotelsDailyParser:
         return self.all_hotels
             
     def _build_search_url(self, arrival_date, departure_date):
-        """Построение URL поиска"""
+        """Построение URL поиска для CSV столбца show_rooms_url"""
         dates_str = f"{arrival_date.strftime('%d.%m.%Y')}-{departure_date.strftime('%d.%m.%Y')}"
         url = (
             f"{self.base_url}"
@@ -103,7 +104,7 @@ class OstrovokHotelsDailyParser:
     def _setup_response_interceptor(self, page):
         """Перехват ответов от API Ostrovok"""
         def handle_response(response):
-            # --- Основной эндпоинт ---
+            # Основной эндпоинт
             if (response.request.method == "POST" and 
                 self.api_endpoint in response.url and
                 response.status == 200 and
@@ -116,8 +117,10 @@ class OstrovokHotelsDailyParser:
                         if isinstance(json_data, dict) and "hotels" in json_data:
                             hotels = json_data.get("hotels")
                             if hotels and isinstance(hotels, list) and len(hotels) > 0:
-                                self.watcher.compare_to_schema(json_data, response.url)  # [NEW]
-                                self._response_sample = {**json_data, 'hotels': hotels[:1]}  # [NEW]
+                                if not self._schema_compared:
+                                    self.watcher.compare_to_schema(json_data, response.url)
+                                    self._schema_compared = True
+                                self._response_sample = {**json_data, 'hotels': hotels[:1]}
                                 extracted_hotels = self._extract_hotels_from_json(json_data)
                                 if extracted_hotels:
                                     self.all_hotels.extend(extracted_hotels)
@@ -129,7 +132,7 @@ class OstrovokHotelsDailyParser:
                         logger.error("Ошибка разбора ответа API: %s", e)
                 return
 
-            # [NEW] --- Все остальные POST-запросы: ищем кандидатов на новый эндпоинт ---
+            # Все остальные POST-запросы, кандидаты на новый эндпоинт
             if (response.request.method == "POST" and
                     response.status == 200 and
                     self.api_endpoint not in response.url):
@@ -141,8 +144,6 @@ class OstrovokHotelsDailyParser:
         """Парсинг всех страниц с пагинацией"""
         current_page = 1
         max_pages = 100
-        empty_page_count = 0  # [NEW]
-        empty_page_threshold = self.watcher.schema['empty_page_threshold']  # [NEW]
         
         while current_page <= max_pages:
             hotels_before = len(self.all_hotels)
@@ -154,7 +155,7 @@ class OstrovokHotelsDailyParser:
             
             logger.info("--- Страница %s ---", current_page)
             
-            goto_timeout = 60000 if self.ci else 50000
+            goto_timeout = 90000 if self.ci else 90000
             
             def _load_page_and_wait_for_api():
                 """Переход на страницу + в CI ожидание networkidle (все запросы страницы завершены)."""
@@ -167,7 +168,7 @@ class OstrovokHotelsDailyParser:
                         page.wait_for_load_state("networkidle", timeout=45000)
                     except Exception:
                         pass
-                time.sleep(2 if self.ci else 1)
+                time.sleep(2 if self.ci else 3)
             
             try:
                 _load_page_and_wait_for_api()
@@ -175,7 +176,7 @@ class OstrovokHotelsDailyParser:
                 logger.warning("[Страница %s] Загрузка: %s", current_page, e)
             
             # Дожидаемся появления отелей (в CI дольше — медленная сеть)
-            max_wait_time = 45 if self.ci else 20
+            max_wait_time = 45 if self.ci else 40
             start_time = time.time()
             while len(self.all_hotels) == hotels_before and (time.time() - start_time) < max_wait_time:
                 time.sleep(0.5)
@@ -184,24 +185,13 @@ class OstrovokHotelsDailyParser:
             hotels_added = len(self.all_hotels) - hotels_before
             
             if hotels_added > 0:
-                empty_page_count = 0  # [NEW]
                 logger.info("Добавлено %s отелей со страницы %s. Переход на следующую страницу...", hotels_added, current_page)
             else:
-                # [NEW] счётчик пустых страниц
-                empty_page_count += 1
-                if empty_page_count >= empty_page_threshold:
-                    msg = (
-                        f"[Аномалия] {empty_page_count} страниц подряд без отелей "
-                        f"(страница {current_page}). Последний URL: {page_url}"
-                    )
-                    logger.error(msg)
-                    send_telegram_summary(f"Ostrovok Hotels: {msg}")
-                    break
                 logger.warning("На странице %s отелей не получено. Конец списка.", current_page)
                 break
             
             current_page += 1
-            time.sleep(2.5 if self.ci else 1.5)
+            time.sleep(2.5 if self.ci else 3)
         
         logger.info("=== Всего собрано отелей со всех страниц: %s ===", len(self.all_hotels))
     
