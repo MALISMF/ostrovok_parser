@@ -1,0 +1,338 @@
+2026-04-14 09:07:30 [INFO] __main__: Режим CI: увеличенные таймауты и ожидание networkidle.
+2026-04-14 09:07:30 [INFO] __main__: Запуск парсера отелей...
+2026-04-14 09:07:30 [INFO] __main__: Даты бронирования: 15.04.2026 - 16.04.2026
+2026-04-14 09:07:32 [INFO] __main__: --- Страница 1 ---
+2026-04-14 09:07:37 [INFO] __main__: Перехвачено и извлечено 20 отелей. Всего: 20
+2026-04-14 09:08:25 [INFO] __main__: Добавлено 20 отелей со страницы 1. Переход на следующую страницу...
+2026-04-14 09:08:28 [INFO] __main__: --- Страница 2 ---
+2026-04-14 09:08:31 [INFO] __main__: Перехвачено и извлечено 20 отелей. Всего: 40
+2026-04-14 09:08:35 [INFO] __main__: Добавлено 20 отелей со страницы 2. Переход на следующую страницу...
+2026-04-14 09:08:37 [INFO] __main__: --- Страница 3 ---
+2026-04-14 09:08:40 [INFO] __main__: Перехвачено и извлечено 20 отелей. Всего: 60
+2026-04-14 09:08:45 [INFO] __main__: Добавлено 20 отелей со страницы 3. Переход на следующую страницу...
+2026-04-14 09:08:47 [INFO] __main__: --- Страница 4 ---
+2026-04-14 09:08:49 [INFO] __main__: Перехвачено и извлечено 20 отелей. Всего: 80
+2026-04-14 09:09:36 [INFO] __main__: Добавлено 20 отелей со страницы 4. Переход на следующую страницу...
+2026-04-14 09:09:38 [INFO] __main__: --- Страница 5 ---
+2026-04-14 09:09:41 [INFO] __main__: Перехвачено и извлечено 20 отелей. Всего: 100
+2026-04-14 09:10:29 [INFO] __main__: Добавлено 20 отелей со страницы 5. Переход на следующую страницу...
+2026-04-14 09:10:32 [INFO] __main__: --- Страница 6 ---
+2026-04-14 09:10:34 [INFO] __main__: Перехвачено и извлечено 20 отелей. Всего: 120
+2026-04-14 09:10:41 [INFO] __main__: Добавлено 20 отелей со страницы 6. Переход на следующую страницу...
+2026-04-14 09:10:44 [INFO] __main__: --- Страница 7 ---
+2026-04-14 09:10:46 [INFO] __main__: Перехвачено и извлечено 20 отелей. Всего: 140
+2026-04-14 09:11:33 [INFO] __main__: Добавлено 20 отелей со страницы 7. Переход на следующую страницу...
+2026-04-14 09:11:35 [INFO] __main__: --- Страница 8 ---
+2026-04-14 09:11:38 [INFO] __main__: Перехвачено и извлечено 20 отелей. Всего: 160
+2026-04-14 09:12:25 [INFO] __main__: Добавлено 20 отелей со страницы 8. Переход на следующую страницу...
+2026-04-14 09:12:27 [INFO] __main__: --- Страница 9 ---
+2026-04-14 09:14:04 [WARNING] __main__: На странице 9 отелей не получено. Конец списка.
+2026-04-14 09:14:04 [INFO] __main__: === Всего собрано отелей со всех страниц: 160 ===
+2026-04-14 09:14:19 [INFO] __main__: Убрано дубликатов: 12. Уникальных отелей: 148
+2026-04-14 09:14:19 [INFO] __main__: Сохранено 148 отелей в /home/runner/work/ostrovok_parser/ostrovok_parser/daily/hotels/2026-04-14.csv
+2026-04-14 09:14:19 [INFO] __main__: Парсинг завершён. Всего обработано 148 отелей.
+2026-04-14 09:14:19 [INFO] __main__: Каталог сохранён: 199 отелей → /home/runner/work/ostrovok_parser/ostrovok_parser/catalog/hotels.csv
+2026-04-14 09:14:19 [INFO] __main__: Каталог обновлён: всего 199, новых 0
+2026-04-14 09:14:20 [INFO] __main__: Даты бронирования: 15.04.2026 - 16.04.2026
+2026-04-14 09:14:20 [INFO] __main__: Запуск браузера для получения куки...
+2026-04-14 09:14:25 [INFO] __main__: Получено 54 куки
+2026-04-14 09:14:25 [INFO] __main__: Запрашиваю evropa_hotel (evropa_hotel)
+2026-04-14 09:14:26 [INFO] __main__: Сохранено 7 номеров для Отель Европа
+2026-04-14 09:14:26 [INFO] __main__: Запрашиваю victory_hotel_4 (victory_hotel_4)
+2026-04-14 09:14:26 [INFO] __main__: Сохранено 3 номеров для Гостиница Виктория
+2026-04-14 09:14:26 [INFO] __main__: Запрашиваю irkutsk_city_center (irkutsk_city_center)
+2026-04-14 09:14:27 [INFO] __main__: Сохранено 5 номеров для Отель Иркутск Сити Центр
+2026-04-14 09:14:27 [INFO] __main__: Запрашиваю dizajnerskaya_kvartira_v_tsentre_irkutska (dizajnerskaya_kvartira_v_tsentre_irkutska)
+2026-04-14 09:14:27 [INFO] __main__: Сохранено 1 номеров для Квартира в центре Иркутска
+2026-04-14 09:14:27 [INFO] __main__: Запрашиваю hotel_premium_hotel_pushkin (hotel_premium_hotel_pushkin)
+2026-04-14 09:14:28 [INFO] __main__: Сохранено 6 номеров для Премиум-отель Пушкин
+2026-04-14 09:14:28 [INFO] __main__: Запрашиваю gostinitsa_ustilim (gostinitsa_ustilim)
+2026-04-14 09:14:29 [INFO] __main__: Сохранено 1 номеров для Усть-Илим
+2026-04-14 09:14:29 [INFO] __main__: Запрашиваю empire_hotel_3 (empire_hotel_3)
+2026-04-14 09:14:29 [INFO] __main__: Сохранено 9 номеров для Гостиница Империя
+2026-04-14 09:14:29 [INFO] __main__: Запрашиваю hotel_nuur_hotel (hotel_nuur_hotel)
+2026-04-14 09:14:30 [INFO] __main__: Сохранено 3 номеров для Отель Nuur Hotel
+2026-04-14 09:14:30 [INFO] __main__: Запрашиваю rus_hotel_irkutsk (rus_hotel_irkutsk)
+2026-04-14 09:14:30 [INFO] __main__: Сохранено 1 номеров для Гостиничный Комплекс Русь
+2026-04-14 09:14:30 [INFO] __main__: Запрашиваю azimut_aeroport_irkutsk_hotel (azimut_aeroport_irkutsk_hotel)
+2026-04-14 09:14:31 [INFO] __main__: Сохранено 5 номеров для AZIMUT Отель Аэропорт Иркутск 4*
+2026-04-14 09:14:31 [INFO] __main__: Запрашиваю podlemorie_hotel (podlemorie_hotel)
+2026-04-14 09:14:33 [INFO] __main__: Сохранено 4 номеров для Отель Подлеморье
+2026-04-14 09:14:33 [INFO] __main__: Запрашиваю burduguz_hotel_2 (burduguz_hotel_2)
+2026-04-14 09:14:33 [INFO] __main__: Сохранено 8 номеров для Парк-Отель Бурдугуз
+2026-04-14 09:14:33 [INFO] __main__: Запрашиваю otel_irkut (otel_irkut)
+2026-04-14 09:14:34 [INFO] __main__: Сохранено 7 номеров для Отель Иркут
+2026-04-14 09:14:34 [INFO] __main__: Запрашиваю apartamentyi_v_irkutske (apartamentyi_v_irkutske)
+2026-04-14 09:14:34 [INFO] __main__: Сохранено 3 номеров для Меблированные комнаты в Иркутске
+2026-04-14 09:14:34 [INFO] __main__: Запрашиваю international_hotel_sayen (international_hotel_sayen)
+2026-04-14 09:14:35 [INFO] __main__: Сохранено 6 номеров для SAYEN
+2026-04-14 09:14:35 [INFO] __main__: Запрашиваю 7_dorog (7_dorog)
+2026-04-14 09:14:35 [INFO] __main__: Сохранено 4 номеров для Гостиница 7 дорог
+2026-04-14 09:14:35 [INFO] __main__: Запрашиваю miniotel_good_hotel (miniotel_good_hotel)
+2026-04-14 09:14:38 [INFO] __main__: Сохранено 4 номеров для Мини-Отель Good Hotel
+2026-04-14 09:14:38 [INFO] __main__: Запрашиваю gostevoy_dom_sunrise (gostevoy_dom_sunrise)
+2026-04-14 09:14:38 [INFO] __main__: Сохранено 4 номеров для Sunrise
+2026-04-14 09:14:38 [INFO] __main__: Запрашиваю angara_hotel (angara_hotel)
+2026-04-14 09:14:42 [INFO] __main__: Сохранено 3 номеров для Ангара Отель
+2026-04-14 09:14:42 [INFO] __main__: Запрашиваю sobolinka_parkhotel_2 (sobolinka_parkhotel_2)
+2026-04-14 09:14:43 [INFO] __main__: Сохранено 2 номеров для Парк-отель Соболинка
+2026-04-14 09:14:43 [INFO] __main__: Запрашиваю uda_2 (uda_2)
+2026-04-14 09:14:43 [INFO] __main__: Сохранено 6 номеров для Отель УДА
+2026-04-14 09:14:43 [INFO] __main__: Запрашиваю minihotel_panda (minihotel_panda)
+2026-04-14 09:14:44 [INFO] __main__: Сохранено 3 номеров для Отель ДиаДэй
+2026-04-14 09:14:44 [INFO] __main__: Запрашиваю ozerny_tulun_sports_complex_na_karbysheva_185_apartment (ozerny_tulun_sports_complex_na_karbysheva_185_apartment)
+2026-04-14 09:14:44 [INFO] __main__: Сохранено 1 номеров для Спорткомплекс Озерный Тулун на Карбышева 185
+2026-04-14 09:14:44 [INFO] __main__: Запрашиваю gostevoj_dom_na_zvezdinskoj (gostevoj_dom_na_zvezdinskoj)
+2026-04-14 09:14:46 [INFO] __main__: Сохранено 3 номеров для Отель на Звездинской
+2026-04-14 09:14:46 [INFO] __main__: Запрашиваю inn_business_hall (inn_business_hall)
+2026-04-14 09:14:48 [INFO] __main__: Сохранено 5 номеров для Отель Business Hall
+2026-04-14 09:14:48 [INFO] __main__: Запрашиваю archi_apt_apartments (archi_apt_apartments)
+2026-04-14 09:14:48 [INFO] __main__: Сохранено 1 номеров для Отель Baikal Archi Apt
+2026-04-14 09:14:48 [INFO] __main__: Запрашиваю baykal_shale_guest_house (baykal_shale_guest_house)
+2026-04-14 09:14:49 [INFO] __main__: Сохранено 2 номеров для Байкал Шале
+2026-04-14 09:14:49 [INFO] __main__: Запрашиваю eko_baikalwood_hotel (eko_baikalwood_hotel)
+2026-04-14 09:14:49 [INFO] __main__: Сохранено 12 номеров для Отель Байкальский лес (BaikalWood Hotel&SPA)
+2026-04-14 09:14:49 [INFO] __main__: Запрашиваю beliy_sobol_parkhotel (beliy_sobol_parkhotel)
+2026-04-14 09:14:50 [INFO] __main__: Сохранено 4 номеров для Парк-отель Белый Соболь
+2026-04-14 09:14:50 [INFO] __main__: Запрашиваю baikal_forest_hotel (baikal_forest_hotel)
+2026-04-14 09:14:50 [INFO] __main__: Сохранено 12 номеров для Отель Baikal Forest
+2026-04-14 09:14:50 [INFO] __main__: Запрашиваю montana_hostel (montana_hostel)
+2026-04-14 09:14:51 [INFO] __main__: Сохранено 3 номеров для Меблированные комнаты Montana
+2026-04-14 09:14:51 [INFO] __main__: Запрашиваю mayak_hotel_listvyanka (mayak_hotel_listvyanka)
+2026-04-14 09:14:54 [INFO] __main__: Сохранено 16 номеров для Отель Маяк
+2026-04-14 09:14:54 [INFO] __main__: Запрашиваю yakovlev_hotel (yakovlev_hotel)
+2026-04-14 09:14:54 [INFO] __main__: Сохранено 4 номеров для Отель Яковлевъ
+2026-04-14 09:14:54 [INFO] __main__: Запрашиваю solnechny_guest_house_7 (solnechny_guest_house_7)
+2026-04-14 09:14:54 [INFO] __main__: Сохранено 1 номеров для Cолнечный
+2026-04-14 09:14:54 [INFO] __main__: Запрашиваю baykal_guest_house_3 (baykal_guest_house_3)
+2026-04-14 09:14:55 [INFO] __main__: Сохранено 6 номеров для Меблированные комнаты Байкал
+2026-04-14 09:14:55 [INFO] __main__: Запрашиваю private_house_uedinenny_dom_na_beregu_zhivopisnoy_zavodi (private_house_uedinenny_dom_na_beregu_zhivopisnoy_zavodi)
+2026-04-14 09:14:55 [INFO] __main__: Сохранено 1 номеров для Байкал 51
+2026-04-14 09:14:55 [INFO] __main__: Запрашиваю best_eastern_hotel_zvezda (best_eastern_hotel_zvezda)
+2026-04-14 09:14:56 [INFO] __main__: Сохранено 5 номеров для Отель Звезда
+2026-04-14 09:14:56 [INFO] __main__: Запрашиваю hotel_nataly_2 (hotel_nataly_2)
+2026-04-14 09:14:56 [INFO] __main__: Сохранено 4 номеров для Отель Натали
+2026-04-14 09:14:56 [INFO] __main__: Запрашиваю tajga_hotel (tajga_hotel)
+2026-04-14 09:14:57 [INFO] __main__: Сохранено 2 номеров для Отель Тайга
+2026-04-14 09:14:57 [INFO] __main__: Запрашиваю legend_of_baikal (legend_of_baikal)
+2026-04-14 09:14:57 [INFO] __main__: Сохранено 6 номеров для Отель Легенда Байкала
+2026-04-14 09:14:57 [INFO] __main__: Запрашиваю hotel_barguzin (hotel_barguzin)
+2026-04-14 09:14:58 [INFO] __main__: Сохранено 2 номеров для Меблированные комнаты Баргузин
+2026-04-14 09:14:58 [INFO] __main__: Запрашиваю otel_tsentral (otel_tsentral)
+2026-04-14 09:14:58 [INFO] __main__: Сохранено 5 номеров для Отель Централь
+2026-04-14 09:14:58 [INFO] __main__: Запрашиваю ibis_irkutsk_center (ibis_irkutsk_center)
+2026-04-14 09:14:58 [INFO] __main__: Сохранено 5 номеров для Отель Ибис Иркутск Центр
+2026-04-14 09:14:58 [INFO] __main__: Запрашиваю malinovka_3 (malinovka_3)
+2026-04-14 09:14:59 [INFO] __main__: Сохранено 9 номеров для Малиновка
+2026-04-14 09:14:59 [INFO] __main__: Запрашиваю kupechesky_dvor_hotel (kupechesky_dvor_hotel)
+2026-04-14 09:14:59 [INFO] __main__: Сохранено 3 номеров для Отель Купеческий Дворъ
+2026-04-14 09:14:59 [INFO] __main__: Запрашиваю matreshka_hotel (matreshka_hotel)
+2026-04-14 09:15:00 [INFO] __main__: Сохранено 9 номеров для Отель Матрешка
+2026-04-14 09:15:00 [INFO] __main__: Запрашиваю lotos_hotel (lotos_hotel)
+2026-04-14 09:15:00 [INFO] __main__: Сохранено 7 номеров для Отель Лотос
+2026-04-14 09:15:00 [INFO] __main__: Запрашиваю bajkal_severnoe_more_hotel (bajkal_severnoe_more_hotel)
+2026-04-14 09:15:01 [INFO] __main__: Сохранено 7 номеров для Отель Байкал - Северное Море
+2026-04-14 09:15:01 [INFO] __main__: Запрашиваю armat_hotel (armat_hotel)
+2026-04-14 09:15:01 [INFO] __main__: Сохранено 10 номеров для Отель Armat
+2026-04-14 09:15:01 [INFO] __main__: Запрашиваю alpari (alpari)
+2026-04-14 09:15:02 [INFO] __main__: Сохранено 2 номеров для Гостиница Альпари
+2026-04-14 09:15:02 [INFO] __main__: Запрашиваю history_boutiquehotel (history_boutiquehotel)
+2026-04-14 09:15:07 [INFO] __main__: Сохранено 8 номеров для Отель HISTORY Бутик-отель и СПА
+2026-04-14 09:15:07 [INFO] __main__: Запрашиваю city_park_hotel_13 (city_park_hotel_13)
+2026-04-14 09:15:07 [INFO] __main__: Сохранено 4 номеров для Меблированные комнаты City Park
+2026-04-14 09:15:07 [INFO] __main__: Запрашиваю oktyabrskaya_minihotel (oktyabrskaya_minihotel)
+2026-04-14 09:15:08 [INFO] __main__: Сохранено 4 номеров для Октябрьская
+2026-04-14 09:15:08 [INFO] __main__: Запрашиваю miniotel_medveditsa (miniotel_medveditsa)
+2026-04-14 09:15:09 [INFO] __main__: Сохранено 3 номеров для Меблированные комнаты Медведица
+2026-04-14 09:15:09 [INFO] __main__: Запрашиваю yolochka (yolochka)
+2026-04-14 09:15:09 [INFO] __main__: Сохранено 6 номеров для Меблированные комнаты Ёлочка
+2026-04-14 09:15:09 [INFO] __main__: Запрашиваю alaniya (alaniya)
+2026-04-14 09:15:10 [INFO] __main__: Сохранено 3 номеров для Алания
+2026-04-14 09:15:10 [INFO] __main__: Запрашиваю green_hotel_ (green_hotel_)
+2026-04-14 09:15:11 [INFO] __main__: Сохранено 6 номеров для Грин Отель
+2026-04-14 09:15:11 [INFO] __main__: Запрашиваю artrezidentsiya_port_olhon (artrezidentsiya_port_olhon)
+2026-04-14 09:15:11 [INFO] __main__: Сохранено 0 номеров для Арт-отель Порт Ольхон
+2026-04-14 09:15:11 [INFO] __main__: Запрашиваю mihail_strogov (mihail_strogov)
+2026-04-14 09:15:13 [INFO] __main__: Сохранено 5 номеров для Отель Михаил Строгов
+2026-04-14 09:15:13 [INFO] __main__: Запрашиваю modul (modul)
+2026-04-14 09:15:17 [INFO] __main__: Сохранено 0 номеров для Гостиница Комфорт
+2026-04-14 09:15:17 [INFO] __main__: Запрашиваю hotel_yubileinaya__2 (hotel_yubileinaya__2)
+2026-04-14 09:15:17 [INFO] __main__: Сохранено 3 номеров для Гостиница Юбилейная
+2026-04-14 09:15:17 [INFO] __main__: Запрашиваю nochleg_i_zavtrak_bb_shambala (nochleg_i_zavtrak_bb_shambala)
+2026-04-14 09:15:19 [INFO] __main__: Сохранено 1 номеров для Загородный отель Шамбала
+2026-04-14 09:15:19 [INFO] __main__: Запрашиваю flagman_hotel (flagman_hotel)
+2026-04-14 09:15:19 [INFO] __main__: Сохранено 3 номеров для Отель Флагман
+2026-04-14 09:15:19 [INFO] __main__: Запрашиваю taiga_2 (taiga_2)
+2026-04-14 09:15:19 [INFO] __main__: Сохранено 0 номеров для Отель Taiga
+2026-04-14 09:15:19 [INFO] __main__: Запрашиваю hotel_sozvezdie_baikala (hotel_sozvezdie_baikala)
+2026-04-14 09:15:21 [INFO] __main__: Сохранено 6 номеров для Отель Созвездие Байкала
+2026-04-14 09:15:21 [INFO] __main__: Запрашиваю hotel_olimpiada (hotel_olimpiada)
+2026-04-14 09:15:23 [INFO] __main__: Сохранено 4 номеров для Олимпиада
+2026-04-14 09:15:23 [INFO] __main__: Запрашиваю hotel_shvedka (hotel_shvedka)
+2026-04-14 09:15:24 [INFO] __main__: Сохранено 1 номеров для Отель ШВЕДКА
+2026-04-14 09:15:24 [INFO] __main__: Запрашиваю mini_hotel_vizit (mini_hotel_vizit)
+2026-04-14 09:15:25 [INFO] __main__: Сохранено 2 номеров для Гостиница Визит
+2026-04-14 09:15:25 [INFO] __main__: Запрашиваю larus (larus)
+2026-04-14 09:15:25 [INFO] __main__: Сохранено 0 номеров для Отель Ларус
+2026-04-14 09:15:25 [INFO] __main__: Запрашиваю hotel_harats_inn (hotel_harats_inn)
+2026-04-14 09:15:26 [INFO] __main__: Сохранено 4 номеров для Отель Harat's inn
+2026-04-14 09:15:26 [INFO] __main__: Запрашиваю praskovya_guest_house (praskovya_guest_house)
+2026-04-14 09:15:26 [INFO] __main__: Сохранено 4 номеров для Отель Прасковья
+2026-04-14 09:15:26 [INFO] __main__: Запрашиваю gostinitsa_akademicheskaya (gostinitsa_akademicheskaya)
+2026-04-14 09:15:27 [INFO] __main__: Сохранено 5 номеров для Отель Гостиница Академическая
+2026-04-14 09:15:27 [INFO] __main__: Запрашиваю lada_8 (lada_8)
+2026-04-14 09:15:27 [INFO] __main__: Сохранено 0 номеров для Отель Гостиница ЛАДА
+2026-04-14 09:15:27 [INFO] __main__: Запрашиваю hotel_aziyayevropa (hotel_aziyayevropa)
+2026-04-14 09:15:28 [INFO] __main__: Сохранено 0 номеров для Отель Азия-Европа
+2026-04-14 09:15:28 [INFO] __main__: Запрашиваю marx_hotel (marx_hotel)
+2026-04-14 09:15:28 [INFO] __main__: Сохранено 0 номеров для Отель Маркс
+2026-04-14 09:15:28 [INFO] __main__: Запрашиваю parus_18 (parus_18)
+2026-04-14 09:15:28 [INFO] __main__: Сохранено 0 номеров для Курортный отель Парус
+2026-04-14 09:15:28 [INFO] __main__: Запрашиваю u_istoka_hotel (u_istoka_hotel)
+2026-04-14 09:15:29 [INFO] __main__: Сохранено 0 номеров для Гостиница У Истока
+2026-04-14 09:15:29 [INFO] __main__: Запрашиваю kheyvitsa_guest_house (kheyvitsa_guest_house)
+2026-04-14 09:15:32 [INFO] __main__: Сохранено 3 номеров для Отель Гостевой Дом Хейвица
+2026-04-14 09:15:32 [INFO] __main__: Запрашиваю arena_g_irkutsk (arena_g_irkutsk)
+2026-04-14 09:15:32 [INFO] __main__: Сохранено 3 номеров для Отель Арена Иркутск
+2026-04-14 09:15:32 [INFO] __main__: Запрашиваю luna_hotel_9 (luna_hotel_9)
+2026-04-14 09:15:34 [INFO] __main__: Сохранено 3 номеров для Отель Луна
+2026-04-14 09:15:34 [INFO] __main__: Запрашиваю krestovaya_pad_hotel (krestovaya_pad_hotel)
+2026-04-14 09:15:34 [INFO] __main__: Сохранено 0 номеров для Гостиница Крестовая падь
+2026-04-14 09:15:34 [INFO] __main__: Запрашиваю gostinitsa_undina (gostinitsa_undina)
+2026-04-14 09:15:35 [INFO] __main__: Сохранено 0 номеров для Отель Ундина
+2026-04-14 09:15:35 [INFO] __main__: Запрашиваю bely_bereg (bely_bereg)
+2026-04-14 09:15:35 [INFO] __main__: Сохранено 2 номеров для Отель Белый берег
+2026-04-14 09:15:35 [INFO] __main__: Запрашиваю sportkompleks_ozerny_tulun_hotel (sportkompleks_ozerny_tulun_hotel)
+2026-04-14 09:15:35 [INFO] __main__: Сохранено 1 номеров для Спорткомплекс Озерный Тулун
+2026-04-14 09:15:35 [INFO] __main__: Запрашиваю saturn_8 (saturn_8)
+2026-04-14 09:15:37 [INFO] __main__: Сохранено 2 номеров для Сатурн
+2026-04-14 09:15:37 [INFO] __main__: Запрашиваю vesta_hotel_3 (vesta_hotel_3)
+2026-04-14 09:15:39 [INFO] __main__: Сохранено 1 номеров для Отель Веста
+2026-04-14 09:15:39 [INFO] __main__: Запрашиваю lazurny_bereg_hotel_ (lazurny_bereg_hotel_)
+2026-04-14 09:15:41 [INFO] __main__: Сохранено 4 номеров для Гостиница Лазурный берег
+2026-04-14 09:15:41 [INFO] __main__: Запрашиваю magnetit (magnetit)
+2026-04-14 09:15:41 [INFO] __main__: Сохранено 4 номеров для Отель Магнетит
+2026-04-14 09:15:41 [INFO] __main__: Запрашиваю yupiter (yupiter)
+2026-04-14 09:15:44 [INFO] __main__: Сохранено 2 номеров для Юпитер
+2026-04-14 09:15:44 [INFO] __main__: Запрашиваю vitim (vitim)
+2026-04-14 09:15:46 [INFO] __main__: Сохранено 1 номеров для Витим
+2026-04-14 09:15:46 [INFO] __main__: Запрашиваю chastny_dom_na_peskakh_guest_house (chastny_dom_na_peskakh_guest_house)
+2026-04-14 09:15:46 [INFO] __main__: Сохранено 5 номеров для Частный Дом На Песках
+2026-04-14 09:15:46 [INFO] __main__: Запрашиваю hotel_kurshavel_ (hotel_kurshavel_)
+2026-04-14 09:15:48 [INFO] __main__: Сохранено 5 номеров для Отель Куршавель
+2026-04-14 09:15:48 [INFO] __main__: Запрашиваю irkutsk_city_lodge (irkutsk_city_lodge)
+2026-04-14 09:15:48 [INFO] __main__: Сохранено 0 номеров для Отель Иркутск Сити Лодж
+2026-04-14 09:15:48 [INFO] __main__: Запрашиваю magas (magas)
+2026-04-14 09:15:50 [INFO] __main__: Сохранено 6 номеров для Отель на Перроне
+2026-04-14 09:15:50 [INFO] __main__: Запрашиваю hotel_anastasiya_2 (hotel_anastasiya_2)
+2026-04-14 09:15:50 [INFO] __main__: Сохранено 12 номеров для Отель ГК Анастасия
+2026-04-14 09:15:50 [INFO] __main__: Запрашиваю v_samom_tsentre_irkutska_minihotel (v_samom_tsentre_irkutska_minihotel)
+2026-04-14 09:15:51 [INFO] __main__: Сохранено 1 номеров для Отель В Сердце Иркутска
+2026-04-14 09:15:51 [INFO] __main__: Запрашиваю wind_lake_guest_house (wind_lake_guest_house)
+2026-04-14 09:15:51 [INFO] __main__: Сохранено 5 номеров для Wind Lake
+2026-04-14 09:15:51 [INFO] __main__: Запрашиваю katantsa_hotel (katantsa_hotel)
+2026-04-14 09:15:52 [INFO] __main__: Сохранено 0 номеров для Отель Катанца
+2026-04-14 09:15:52 [INFO] __main__: Запрашиваю domik_na_kholme_guest_house (domik_na_kholme_guest_house)
+2026-04-14 09:15:52 [INFO] __main__: Сохранено 0 номеров для Меблированные комнаты Домик на холме
+2026-04-14 09:15:52 [INFO] __main__: Запрашиваю shelest (shelest)
+2026-04-14 09:15:53 [INFO] __main__: Сохранено 2 номеров для Shelest
+2026-04-14 09:15:53 [INFO] __main__: Запрашиваю less_guest_house (less_guest_house)
+2026-04-14 09:15:53 [INFO] __main__: Сохранено 2 номеров для Меблированные комнаты Лесс
+2026-04-14 09:15:53 [INFO] __main__: Запрашиваю smart_hotel_kdo_irkutsk_hotel (smart_hotel_kdo_irkutsk_hotel)
+2026-04-14 09:15:54 [INFO] __main__: Сохранено 4 номеров для Отель Smart Hotel Иркутск
+2026-04-14 09:15:54 [INFO] __main__: Запрашиваю loft_house_38_guest_house (loft_house_38_guest_house)
+2026-04-14 09:15:54 [INFO] __main__: Сохранено 0 номеров для Loft House 38
+2026-04-14 09:15:54 [INFO] __main__: Запрашиваю kalina_house_olkhon_baikal_guest_house (kalina_house_olkhon_baikal_guest_house)
+2026-04-14 09:15:54 [INFO] __main__: Сохранено 2 номеров для Конкордия
+2026-04-14 09:15:54 [INFO] __main__: Запрашиваю dauria_hotel_2 (dauria_hotel_2)
+2026-04-14 09:15:55 [INFO] __main__: Сохранено 1 номеров для Отель Даурия
+2026-04-14 09:15:55 [INFO] __main__: Запрашиваю gostevoy_dom_melodiya_baykala (gostevoy_dom_melodiya_baykala)
+2026-04-14 09:15:55 [INFO] __main__: Сохранено 1 номеров для Гостевой дом Мелодия Байкала
+2026-04-14 09:15:55 [INFO] __main__: Запрашиваю aura_living_quarters (aura_living_quarters)
+2026-04-14 09:15:56 [INFO] __main__: Сохранено 0 номеров для Меблированные комнаты Аура
+2026-04-14 09:15:56 [INFO] __main__: Запрашиваю momant_house_recreation_camp (momant_house_recreation_camp)
+2026-04-14 09:15:56 [INFO] __main__: Сохранено 0 номеров для Momant house
+2026-04-14 09:15:56 [INFO] __main__: Запрашиваю lyuks_hotel_4 (lyuks_hotel_4)
+2026-04-14 09:15:57 [INFO] __main__: Сохранено 2 номеров для Отель Люкс
+2026-04-14 09:15:57 [INFO] __main__: Запрашиваю gostevoy_dom_chilla_villa_baikal (gostevoy_dom_chilla_villa_baikal)
+2026-04-14 09:15:58 [INFO] __main__: Сохранено 0 номеров для Гостевой дом Chilla_villa_baikal
+2026-04-14 09:15:58 [INFO] __main__: Запрашиваю hotel_shishki (hotel_shishki)
+2026-04-14 09:15:59 [INFO] __main__: Сохранено 0 номеров для Меблированные комнаты Шишки
+2026-04-14 09:15:59 [INFO] __main__: Запрашиваю hotel_soyuz_2 (hotel_soyuz_2)
+2026-04-14 09:15:59 [INFO] __main__: Сохранено 8 номеров для Жилое помещение Союз
+2026-04-14 09:15:59 [INFO] __main__: Запрашиваю u_lukomorya_4 (u_lukomorya_4)
+2026-04-14 09:16:00 [INFO] __main__: Сохранено 0 номеров для У Лукоморья
+2026-04-14 09:16:00 [INFO] __main__: Запрашиваю hotel_star_of_baiakal (hotel_star_of_baiakal)
+2026-04-14 09:16:02 [INFO] __main__: Сохранено 5 номеров для Гостиница Star of Baikal
+2026-04-14 09:16:02 [INFO] __main__: Запрашиваю amurskiy (amurskiy)
+2026-04-14 09:16:02 [INFO] __main__: Сохранено 5 номеров для Отель Амурский
+2026-04-14 09:16:02 [INFO] __main__: Запрашиваю bajkalskie_sezonyi (bajkalskie_sezonyi)
+2026-04-14 09:16:04 [INFO] __main__: Сохранено 5 номеров для Отель Парк Байкальские сезоны
+2026-04-14 09:16:04 [INFO] __main__: Запрашиваю royal_hotel_33 (royal_hotel_33)
+2026-04-14 09:16:04 [INFO] __main__: Сохранено 0 номеров для Отель Рояль
+2026-04-14 09:16:04 [INFO] __main__: Запрашиваю tikhaya_gavan_4 (tikhaya_gavan_4)
+2026-04-14 09:16:06 [INFO] __main__: Сохранено 2 номеров для Отель "Тихая Гавань"
+2026-04-14 09:16:06 [INFO] __main__: Запрашиваю vostochnaia (vostochnaia)
+2026-04-14 09:16:06 [INFO] __main__: Сохранено 0 номеров для Гостиница Восточная
+2026-04-14 09:16:06 [INFO] __main__: Запрашиваю baza_otdykha_village_hvoy (baza_otdykha_village_hvoy)
+2026-04-14 09:16:07 [INFO] __main__: Сохранено 4 номеров для Вилладж Хвоя
+2026-04-14 09:16:07 [INFO] __main__: Запрашиваю hotel_khotej (hotel_khotej)
+2026-04-14 09:16:07 [INFO] __main__: Сохранено 0 номеров для Отель Хотэй
+2026-04-14 09:16:07 [INFO] __main__: Запрашиваю gostevoi_dom_margobai (gostevoi_dom_margobai)
+2026-04-14 09:16:08 [INFO] __main__: Сохранено 0 номеров для Отель Маргобай
+2026-04-14 09:16:08 [INFO] __main__: Запрашиваю metelitsa_6 (metelitsa_6)
+2026-04-14 09:16:10 [INFO] __main__: Сохранено 0 номеров для Отель Метелица
+2026-04-14 09:16:10 [INFO] __main__: Запрашиваю dream_of_baikal_hotel (dream_of_baikal_hotel)
+2026-04-14 09:16:10 [INFO] __main__: Сохранено 0 номеров для Отель Dream of Baikal
+2026-04-14 09:16:10 [INFO] __main__: Запрашиваю hotel_baikal_best_edelweiss (hotel_baikal_best_edelweiss)
+2026-04-14 09:16:14 [INFO] __main__: Сохранено 0 номеров для Baikal Best Edelweiss
+2026-04-14 09:16:14 [INFO] __main__: Запрашиваю pribaikalskaya_hotel (pribaikalskaya_hotel)
+2026-04-14 09:16:14 [INFO] __main__: Сохранено 4 номеров для Гостиница Прибайкальская
+2026-04-14 09:16:14 [INFO] __main__: Запрашиваю hotel_kosmos_5 (hotel_kosmos_5)
+2026-04-14 09:16:15 [INFO] __main__: Сохранено 4 номеров для Отель Космос
+2026-04-14 09:16:15 [INFO] __main__: Запрашиваю gostevoj_dom_otdyih_na_bajkale (gostevoj_dom_otdyih_na_bajkale)
+2026-04-14 09:16:15 [INFO] __main__: Сохранено 0 номеров для Отель Отдых на Байкале
+2026-04-14 09:16:15 [INFO] __main__: Запрашиваю olkhon_house_guest_family_house (olkhon_house_guest_family_house)
+2026-04-14 09:16:15 [INFO] __main__: Сохранено 0 номеров для Olkhon Family House
+2026-04-14 09:16:15 [INFO] __main__: Запрашиваю trakstop_38_2 (trakstop_38_2)
+2026-04-14 09:16:16 [INFO] __main__: Сохранено 0 номеров для Trakstop 38
+2026-04-14 09:16:16 [INFO] __main__: Запрашиваю khoromy_recreation_camp (khoromy_recreation_camp)
+2026-04-14 09:16:17 [INFO] __main__: Сохранено 4 номеров для Хоромы
+2026-04-14 09:16:17 [INFO] __main__: Запрашиваю hotel_gostinitsa_dinamo (hotel_gostinitsa_dinamo)
+2026-04-14 09:16:17 [INFO] __main__: Сохранено 5 номеров для Отель Динамо
+2026-04-14 09:16:17 [INFO] __main__: Запрашиваю zvezda_kochevnika (zvezda_kochevnika)
+2026-04-14 09:16:18 [INFO] __main__: Сохранено 0 номеров для Отель Звезда Кочевника
+2026-04-14 09:16:18 [INFO] __main__: Запрашиваю planeta_9 (planeta_9)
+2026-04-14 09:16:19 [INFO] __main__: Сохранено 4 номеров для Планета
+2026-04-14 09:16:19 [INFO] __main__: Запрашиваю gostevoy_dom_isiger_baikal (gostevoy_dom_isiger_baikal)
+2026-04-14 09:16:20 [INFO] __main__: Сохранено 0 номеров для Гостевой дом ISIGER BAIKAL
+2026-04-14 09:16:20 [INFO] __main__: Запрашиваю gostevoy_dom_mandarkhan_obaykal (gostevoy_dom_mandarkhan_obaykal)
+2026-04-14 09:16:20 [INFO] __main__: Сохранено 1 номеров для Мандархан, о.Байкал
+2026-04-14 09:16:20 [INFO] __main__: Запрашиваю glemping_hygge_barn (glemping_hygge_barn)
+2026-04-14 09:16:21 [INFO] __main__: Сохранено 2 номеров для Hygge Barn
+2026-04-14 09:16:21 [INFO] __main__: Запрашиваю svetly_aparthotel (svetly_aparthotel)
+2026-04-14 09:16:22 [INFO] __main__: Сохранено 2 номеров для Отель Светлый
+2026-04-14 09:16:22 [INFO] __main__: Запрашиваю baykkalina_guest_house (baykkalina_guest_house)
+2026-04-14 09:16:22 [INFO] __main__: Сохранено 3 номеров для БайкКалина
+2026-04-14 09:16:22 [INFO] __main__: Запрашиваю na_gornoy_ulitse_5_private_house (na_gornoy_ulitse_5_private_house)
+2026-04-14 09:16:23 [INFO] __main__: Сохранено 0 номеров для Меблированные комнаты на Горной Улице 7Б
+2026-04-14 09:16:23 [INFO] __main__: Запрашиваю izumrud_hotel_7 (izumrud_hotel_7)
+2026-04-14 09:16:23 [INFO] __main__: Сохранено 2 номеров для Отель Изумруд
+2026-04-14 09:16:23 [INFO] __main__: Запрашиваю dlya_kompanii_guest_house (dlya_kompanii_guest_house)
+2026-04-14 09:16:24 [INFO] __main__: Сохранено 1 номеров для Для компании
+2026-04-14 09:16:24 [INFO] __main__: Запрашиваю v_russkom_stile_guest_house (v_russkom_stile_guest_house)
+2026-04-14 09:16:24 [INFO] __main__: Сохранено 0 номеров для Меблированные комнаты в Русском Стиле
+2026-04-14 09:16:24 [INFO] __main__: Запрашиваю komilfo_2 (komilfo_2)
+2026-04-14 09:16:26 [INFO] __main__: Сохранено 5 номеров для Отель Комильфо
+2026-04-14 09:16:26 [INFO] __main__: Запрашиваю hotelclub_ice (hotelclub_ice)
+2026-04-14 09:16:28 [INFO] __main__: Сохранено 1 номеров для Отель Сибирская резиденция Лёд Байкала
+2026-04-14 09:16:28 [INFO] __main__: Запрашиваю rezidentsii_rodina_irkutsk (rezidentsii_rodina_irkutsk)
+2026-04-14 09:16:29 [INFO] __main__: Сохранено 2 номеров для Резиденции Rodina Irkutsk
+2026-04-14 09:16:29 [INFO] __main__: Запрашиваю pekin_hotel (pekin_hotel)
+2026-04-14 09:16:29 [INFO] __main__: Сохранено 2 номеров для Отель Пекин
+2026-04-14 09:16:29 [INFO] __main__: Запрашиваю maksi_hotel (maksi_hotel)
+2026-04-14 09:16:29 [INFO] __main__: Сохранено 1 номеров для Отель Макси
+2026-04-14 09:16:29 [INFO] __main__: Сохранено 494 номеров в /home/runner/work/ostrovok_parser/ostrovok_parser/daily/rooms/2026-04-14.csv
+2026-04-14 09:16:29 [INFO] __main__: Парсинг завершён. Всего обработано 494 номеров.
+2026-04-14 09:16:30 [INFO] __main__: Статистика сохранена в /home/runner/work/ostrovok_parser/ostrovok_parser/daily/statistics/2026-04-14.csv
+2026-04-14 09:16:30 [INFO] __main__: Обработано 148 отелей
