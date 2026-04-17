@@ -117,13 +117,19 @@ def generate_statistics(run_date=None):
         free_rooms_amount = stats.get('free_rooms_amount', 0)
         min_price = stats.get('min_price')
         max_capacity = stats.get('max_capacity', 0)
-        
-        # Вычисляем процент доступных номеров
-        if rooms_num > 0:
-            available_rooms_percent = round((free_rooms_amount / rooms_num) * 100, 2)
+
+        # Вычисляем процент доступных номеров.
+        effective_rooms_num = max(rooms_num, free_rooms_amount)
+        if effective_rooms_num > 0:
+            available_rooms_percent = round((free_rooms_amount / effective_rooms_num) * 100, 2)
         else:
             available_rooms_percent = 0.0
-        
+        if free_rooms_amount > rooms_num > 0:
+            logger.warning(
+                "free_rooms_amount (%s) > rooms_num (%s) для %s — используем effective_rooms_num=%s",
+                free_rooms_amount, rooms_num, ota_hotel_id, effective_rooms_num,
+            )
+                
         # Форматируем минимальную цену
         min_price_str = f"{min_price:.2f}" if min_price is not None else ""
         
