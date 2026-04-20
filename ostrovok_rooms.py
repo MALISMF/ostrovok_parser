@@ -185,7 +185,6 @@ class OstrovokRoomsDailyParser:
                 
                 # Группируем по rg_hash
                 if rg_hash in rooms_by_rg_hash:
-                    # Объединяем: обновляем min/max цены и счетчик
                     existing = rooms_by_rg_hash[rg_hash]
                     existing["count_rg_hash"] += 1
                     if price_value < existing.get("_price_min", float('inf')):
@@ -195,7 +194,6 @@ class OstrovokRoomsDailyParser:
                         existing["price_rub_max"] = price_rub
                         existing["_price_max"] = price_value
                 else:
-                    # Первая запись для этого rg_hash
                     rooms_by_rg_hash[rg_hash] = {
                         "ota_hotel_id": hotel_id,
                         "master_id": master_id,
@@ -216,64 +214,86 @@ class OstrovokRoomsDailyParser:
                     }
             else:
                 for room in rooms:
-                    rg_hash = room.get("rg_hash", "")
-                    room_name = room.get("room_name", "")
-                    room_data_trans = room.get("room_data_trans", {}).get("ru", {})
-                    bedding_type = room_data_trans.get("bedding_type", "")
-                    beds_list = room_data_trans.get("beds") or []
-                    beds_str = json.dumps(beds_list, ensure_ascii=False) if beds_list else ""
-                    allotment = room.get("allotment", 0)
-                    bedding_data = room.get("bedding_data", [])
-                    multi_bed_data = room.get("multi_bed_data", [])
+                    try:  
+                        rg_hash = room.get("rg_hash", "")
+                        room_name = room.get("room_name", "")
+                        room_data_trans = room.get("room_data_trans", {}).get("ru", {})
+                        bedding_type = room_data_trans.get("bedding_type", "")
+                        beds_list = room_data_trans.get("beds") or []
+                        beds_str = json.dumps(beds_list, ensure_ascii=False) if beds_list else ""
+                        allotment = room.get("allotment", 0)
+                        bedding_data = room.get("bedding_data", [])
+                        multi_bed_data = room.get("multi_bed_data", [])
 
-                    # Вместимость одного номера
-                    capacity_per_room = compute_max_capacity(room_name, beds_list)
-                    
-                    # Пропускаем записи без rg_hash
-                    if not rg_hash:
-                        continue
-                    
-                    # Преобразуем allotment в число
-                    try:
-                        allotment_value = int(allotment) if allotment else 0
-                    except (ValueError, TypeError):
-                        allotment_value = 0
-                    
-                    # Преобразуем bedding_data и multi_bed_data в строки
-                    bedding_data_str = json.dumps(bedding_data, ensure_ascii=False) if bedding_data else ""
-                    multi_bed_data_str = json.dumps(multi_bed_data, ensure_ascii=False) if multi_bed_data else ""
-                    
-                    # Группируем по rg_hash
-                    if rg_hash in rooms_by_rg_hash:
-                        # Объединяем: обновляем min/max цены и счетчик
-                        existing = rooms_by_rg_hash[rg_hash]
-                        existing["count_rg_hash"] += 1
-                        if price_value < existing.get("_price_min", float('inf')):
-                            existing["price_rub_min"] = price_rub
-                            existing["_price_min"] = price_value
-                        if price_value > existing.get("_price_max", float('-inf')):
-                            existing["price_rub_max"] = price_rub
-                            existing["_price_max"] = price_value
-                    else:
-                        # Первая запись для этого rg_hash
-                        rooms_by_rg_hash[rg_hash] = {
-                            "ota_hotel_id": hotel_id,
-                            "master_id": master_id,
-                            "room_name": room_name,
-                            "rg_hash": rg_hash,
-                            "count_rg_hash": 1,
-                            "allotment": str(allotment_value),
-                            "bedding_type": bedding_type,
-                            "beds": beds_str,
-                            "bedding_data": bedding_data_str,
-                            "multi_bed_data": multi_bed_data_str,
-                            "capacity": str(capacity_per_room),
-                            "price_rub_min": price_rub,
-                            "price_rub_max": price_rub,
-                            "url": hotel_url,
-                            "_price_min": price_value,
-                            "_price_max": price_value
-                        }
+                        # Вместимость одного номера
+                        capacity_per_room = compute_max_capacity(room_name, beds_list)
+                        
+                        # Пропускаем записи без rg_hash
+                        if not rg_hash:
+                            continue
+                        
+                        # Преобразуем allotment в число
+                        try:
+                            allotment_value = int(allotment) if allotment else 0
+                        except (ValueError, TypeError):
+                            allotment_value = 0
+                        
+                        # Преобразуем bedding_data и multi_bed_data в строки
+                        bedding_data_str = json.dumps(bedding_data, ensure_ascii=False) if bedding_data else ""
+                        multi_bed_data_str = json.dumps(multi_bed_data, ensure_ascii=False) if multi_bed_data else ""
+                        
+                        # Группируем по rg_hash
+                        if rg_hash in rooms_by_rg_hash:
+                            # Объединяем: обновляем min/max цены и счетчик
+                            existing = rooms_by_rg_hash[rg_hash]
+                            existing["count_rg_hash"] += 1
+                            if price_value < existing.get("_price_min", float('inf')):
+                                existing["price_rub_min"] = price_rub
+                                existing["_price_min"] = price_value
+                            if price_value > existing.get("_price_max", float('-inf')):
+                                existing["price_rub_max"] = price_rub
+                                existing["_price_max"] = price_value
+                        else:
+                            # Первая запись для этого rg_hash
+                            rooms_by_rg_hash[rg_hash] = {
+                                "ota_hotel_id": hotel_id,
+                                "master_id": master_id,
+                                "room_name": room_name,
+                                "rg_hash": rg_hash,
+                                "count_rg_hash": 1,
+                                "allotment": str(allotment_value),
+                                "bedding_type": bedding_type,
+                                "beds": beds_str,
+                                "bedding_data": bedding_data_str,
+                                "multi_bed_data": multi_bed_data_str,
+                                "capacity": str(capacity_per_room),
+                                "price_rub_min": price_rub,
+                                "price_rub_max": price_rub,
+                                "url": hotel_url,
+                                "_price_min": price_value,
+                                "_price_max": price_value
+                            }
+                    except Exception as e:  
+                        logger.warning("Ошибка при извлечении данных номера (hotel_id=%s): %s", hotel_id, e)  
+                        err_key = f"_err_{hotel_id}_{id(room)}" 
+                        rooms_by_rg_hash[err_key] = {  
+                            "ota_hotel_id": hotel_id,  
+                            "master_id": master_id,  
+                            "room_name": None,  
+                            "rg_hash": None,  
+                            "count_rg_hash": 1,  
+                            "allotment": None,  
+                            "bedding_type": None,  
+                            "beds": None,  
+                            "bedding_data": None,  
+                            "multi_bed_data": None,  
+                            "capacity": None,  
+                            "price_rub_min": None,  
+                            "price_rub_max": None,  
+                            "url": hotel_url,  
+                            "_price_min": float('inf'),  
+                            "_price_max": float('-inf')  
+                        }  
         
         # Удаляем служебные поля и преобразуем count_rg_hash в строку
         rooms_data = []
