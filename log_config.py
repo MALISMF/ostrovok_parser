@@ -1,6 +1,3 @@
-"""Общая настройка логирования: консоль + файл (по желанию). Папка логов — logs в корне проекта.
-Telegram: при TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID ошибки уходят в Telegram,
-итог парсинга — через send_telegram_summary()."""
 import logging
 import os
 import sys
@@ -23,23 +20,29 @@ def get_log_file_path(run_date):
 
 
 def _send_telegram(text):
-    """Отправить одно сообщение в Telegram. Возвращает True при успехе."""
+    """Отправить одно сообщение в Telegram всем получателям из TELEGRAM_CHAT_ID."""
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
-    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
-    if not token or not chat_id or not requests:
+    chat_ids_raw = os.environ.get("TELEGRAM_CHAT_ID", "")
+    if not token or not chat_ids_raw or not requests:
         return False
     text = (text or "").strip()[:TELEGRAM_MESSAGE_MAX_LENGTH]
     if not text:
         return False
-    try:
-        r = requests.post(
-            f"https://api.telegram.org/bot{token}/sendMessage",
-            json={"chat_id": chat_id, "text": text, "disable_web_page_preview": True},
-            timeout=10,
-        )
-        return r.status_code == 200
-    except Exception:
-        return False
+
+    chat_ids = [cid.strip() for cid in chat_ids_raw.split(",") if cid.strip()]
+    success = False
+    for chat_id in chat_ids:
+        try:
+            r = requests.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat_id, "text": text, "disable_web_page_preview": True},
+                timeout=10,
+            )
+            if r.status_code == 200:
+                success = True
+        except Exception:
+            pass
+    return success
 
 
 def send_telegram_summary(message):
